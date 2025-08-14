@@ -254,21 +254,13 @@ curl http://localhost:9000/api/status
 
 ## 🌟 **Available Network Topologies**
 
-### **Production-Ready Topologies**
 | Name | VMs | Description | Resource Requirements | Complexity |
 |------|-----|-------------|----------------------|------------|
 | **Enterprise Network Lab** | 17 | Full enterprise with DMZ, Corporate, Security VLANs | 16GB RAM, 95GB disk | ⭐⭐⭐⭐⭐ |
-| **Basic Security Lab** | 5 | Essential security testing environment | 8GB RAM, 25GB disk | ⭐⭐⭐ |
-| **SOC Training Lab** | 12 | Security Operations Center simulation | 12GB RAM, 60GB disk | ⭐⭐⭐⭐ |
-| **Penetration Testing** | 8 | Ethical hacking practice environment | 10GB RAM, 40GB disk | ⭐⭐⭐⭐ |
-
-### **Specialized Scenarios**
-| Name | VMs | Use Case | Focus Area | Complexity |
-|------|-----|----------|------------|------------|
-| **Incident Response** | 6 | IR scenario simulation | Forensics, containment | ⭐⭐⭐ |
-| **Malware Analysis** | 4 | Safe malware research | Reverse engineering | ⭐⭐⭐ |
-| **IoT Security** | 10 | IoT device security testing | Device vulnerabilities | ⭐⭐⭐⭐ |
-| **Industrial Control** | 15 | SCADA/ICS security | Critical infrastructure | ⭐⭐⭐⭐⭐ |
+| **Basic Security Lab** | 5 | Essential security testing environment | 8GB RAM, 30GB disk | ⭐⭐⭐ |
+| **SOC Training Lab** | 12 | Security Operations Center simulation | 12GB RAM, 75GB disk | ⭐⭐⭐⭐ |
+| **Penetration Testing Lab** | 10 | Ethical hacking practice environment | 10GB RAM, 65GB disk | ⭐⭐⭐⭐ |
+| **IoT Security Lab** | 11 | IoT device security testing | 8GB RAM, 45GB disk | ⭐⭐⭐⭐ |
 
 ## 🔧 **Management Tools**
 
@@ -544,32 +536,12 @@ python3 netlab-bridge.py dev
 
 ## 📚 **Documentation**
 
-### **User Documentation**
-- [📖 **User Guide**](docs/user-guide.md) - Complete usage documentation
+### **Available Documentation**
+- [📖 **User Guide**](docs/user-guide.md) - Complete usage documentation and how-to guides
 - [🚀 **Quick Start Guide**](docs/quick-start.md) - Get started in 5 minutes
-- [🌐 **Topology Guide**](docs/topology-guide.md) - Creating custom topologies
-- [🎮 **Web Interface Guide**](docs/web-interface.md) - Dashboard usage
-- [🔧 **Configuration Guide**](docs/configuration.md) - Advanced configuration
-
-### **Technical Documentation**
-- [🏗️ **System Design**](docs/system-design.md) - Architecture deep-dive
-- [🔌 **API Reference**](docs/api-reference.md) - REST API documentation
-- [⚙️ **Installation Guide**](docs/installation.md) - Detailed installation steps
-- [🔒 **Security Guide**](docs/security.md) - Security best practices
-- [📊 **Performance Guide**](docs/performance.md) - Optimization techniques
-
-### **Developer Documentation**
-- [💻 **Developer Guide**](docs/developer-guide.md) - Extending NetLab V2
-- [🧪 **Testing Guide**](docs/testing.md) - Test suite documentation
-- [🔄 **CI/CD Guide**](docs/cicd.md) - Deployment automation
-- [🛠️ **Troubleshooting Guide**](docs/troubleshooting.md) - Common issues and solutions
-- [📦 **Container Guide**](docs/container-guide.md) - Container architecture details
-
-### **Training Materials**
-- [🎓 **Training Scenarios**](docs/training-scenarios.md) - Pre-built training labs
-- [🔍 **Lab Exercises**](docs/lab-exercises.md) - Hands-on exercises
-- [📝 **Assessment Tools**](docs/assessment-tools.md) - Skills assessment materials
-- [🏆 **Certification Prep**](docs/certification-prep.md) - Certification preparation
+- [🏗️ **System Design**](docs/system-design.md) - Architecture deep-dive and technical decisions
+- [🔌 **API Reference**](docs/api-reference.md) - REST API documentation with examples
+- [🛠️ **How-To Guides**](docs/how-to-guides.md) - Step-by-step guides for common scenarios
 
 ## 📄 **License**
 
@@ -583,31 +555,17 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - ❗ No warranty provided
 - ❗ Authors not liable
 
+**Copyright (c) 2025 Samuel Tanaka Sibarani**
+
 ## 🙋 **Support & Community**
 
 ### **Community Support**
 - **GitHub Issues**: [Report bugs and request features](https://github.com/sammtan/netlab-v2/issues)
-- **Discussions**: [Community Q&A and discussions](https://github.com/sammtan/netlab-v2/discussions)
-- **Discord**: [Real-time community chat](https://discord.gg/netlab-v2)
-- **Reddit**: [r/NetLabV2](https://reddit.com/r/NetLabV2) community
-
-### **Professional Support**
-- **Enterprise Support**: Commercial support packages available
-- **Custom Development**: Custom topology and feature development
-- **Training Services**: Professional training and certification programs
-- **Consulting**: Network design and implementation consulting
 
 ### **Contact Information**
-- **Email**: contact@netlab-v2.com
-- **Website**: https://netlab-v2.com
-- **LinkedIn**: [NetLab V2](https://linkedin.com/company/netlab-v2)
-- **Twitter**: [@NetLabV2](https://twitter.com/NetLabV2)
-
-### **Response Times**
-- **Community Support**: Best effort, typically 24-48 hours
-- **Bug Reports**: 1-2 business days for initial response
-- **Security Issues**: 24 hours or less for critical issues
-- **Enterprise Support**: SLA-based response times
+- **Email**: sammtan.rt@gmail.com
+- **Website**: https://sammtan.github.io
+- **LinkedIn**: [linkedin.com/in/sammtan](https://linkedin.com/in/sammtan)
 
 ## 🏆 **Acknowledgments**
 
@@ -636,21 +594,13 @@ Special thanks to all contributors who have helped make NetLab V2 possible:
 ![GitHub Stars](https://img.shields.io/github/stars/sammtan/netlab-v2?style=social)
 ![GitHub Forks](https://img.shields.io/github/forks/sammtan/netlab-v2?style=social)
 ![GitHub Issues](https://img.shields.io/github/issues/sammtan/netlab-v2)
-![GitHub Pull Requests](https://img.shields.io/github/issues-pr/sammtan/netlab-v2)
-![Docker Pulls](https://img.shields.io/docker/pulls/netlab/v2)
 
 ### **Development Statistics**
 - **Lines of Code**: 15,000+ (Python, Go, Rust, Shell)
 - **Test Coverage**: 95%+ code coverage
-- **Documentation**: 50+ pages of documentation
-- **Topologies**: 10+ pre-built network topologies
-- **Contributors**: Growing community of contributors
-
-### **Usage Statistics**
-- **Downloads**: 1,000+ GitHub downloads
-- **Docker Pulls**: 500+ container downloads
-- **Active Users**: 100+ regular users
-- **Enterprise Deployments**: 10+ organizations
+- **Documentation**: 5 comprehensive guides
+- **Topologies**: 5 specialized network scenarios
+- **Development**: Individual project by Samuel Tanaka Sibarani
 
 ---
 
