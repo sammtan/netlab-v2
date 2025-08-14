@@ -1,0 +1,141 @@
+# NetLab V2 - Isolated Development Environment
+# Docker Compose configuration for complete development isolation
+
+version: '3.8'
+
+services:
+  netlab-idev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: netlab-idev
+    hostname: netlab-dev
+    
+    # Volume mappings - ONLY for development source code
+    volumes:
+      # Mount source code for live development
+      - ../:/workspace/src:rw
+      
+      # Persistent volumes for development artifacts
+      - idev_build:/workspace/build
+      - idev_toolchains:/workspace/toolchains
+      - idev_artifacts:/workspace/artifacts
+      - idev_cache:/home/netlab/.cache
+      
+      # Docker socket for building containers (if needed)
+      - /var/run/docker.sock:/var/run/docker.sock
+    
+    # Environment variables
+    environment:
+      - NETLAB_DEV=true
+      - WORKSPACE=/workspace
+      - PYTHONPATH=/workspace/src
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    
+    # Network configuration
+    networks:
+      - netlab-dev-network
+    
+    # Keep container running for interactive development
+    stdin_open: true
+    tty: true
+    
+    # Resource limits for development container
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'      # Allow generous CPU for builds
+          memory: 8G       # Generous memory for compilation
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    
+    # Security context
+    security_opt:
+      - no-new-privileges:true
+    
+    # Capabilities for development tools
+    cap_add:
+      - SYS_ADMIN      # For mounting filesystems during image builds
+      - NET_ADMIN      # For network testing
+    
+    # Privileged mode for development tasks (image building, etc.)
+    privileged: true
+    
+    # Labels for identification
+    labels:
+      netlab.component: "idev"
+      netlab.version: "2.0"
+      netlab.purpose: "isolated-development"
+
+  # Documentation generation service
+  docs-generator:
+    image: python:3.11-alpine
+    container_name: netlab-docs
+    working_dir: /docs
+    volumes:
+      - ../docs:/docs:ro
+      - idev_artifacts:/output
+    command: >
+      sh -c "
+        pip install sphinx sphinx-rtd-theme myst-parser &&
+        sphinx-build -b html . /output/docs
+      "
+    networks:
+      - netlab-dev-network
+    profiles:
+      - docs
+
+  # Code quality service
+  quality-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: netlab-quality
+    working_dir: /workspace/src
+    volumes:
+      - ../:/workspace/src:ro
+      - idev_artifacts:/workspace/artifacts
+    command: >
+      sh -c "
+        echo 'Running comprehensive code quality checks...' &&
+        python -m black --check --diff . &&
+        python -m isort --check-only --diff . &&
+        python -m flake8 . &&
+        python -m mypy . &&
+        python -m bandit -r . &&
+        python -m pytest tests/ --cov=./ --cov-report=html:/workspace/artifacts/coverage
+      "
+    networks:
+      - netlab-dev-network
+    profiles:
+      - quality
+
+# Networks
+networks:
+  netlab-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+    driver_opts:
+      com.docker.network.bridge.name: netlab-dev-br
+
+# Persistent volumes for development data
+volumes:
+  idev_build:
+    name: netlab_idev_build
+    driver: local
+    
+  idev_toolchains:
+    name: netlab_idev_toolchains
+    driver: local
+    
+  idev_artifacts:
+    name: netlab_idev_artifacts
+    driver: local
+    
+  idev_cache:
+    name: netlab_idev_cache
+    driver: local

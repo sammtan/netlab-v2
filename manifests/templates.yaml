@@ -1,0 +1,531 @@
+# NetLab Topology Templates
+# Pre-built network scenarios for common use cases
+schema: v1
+
+templates:
+  # =============================================================================
+  # SMALL OFFICE / HOME OFFICE (SOHO) TEMPLATES
+  # =============================================================================
+  
+  small-office-basic:
+    name: "Small Office - Basic Network"
+    description: "Simple small office network with router, switch, AP, and endpoints"
+    category: "soho"
+    difficulty: "beginner"
+    estimated_time: "15 minutes"
+    resource_requirements:
+      min_ram_gb: 6
+      min_disk_gb: 60
+      estimated_devices: 6
+    
+    devices:
+      - ref: R1
+        type: vyos-router
+        description: "Internet gateway router"
+      - ref: SW1
+        type: ovs-switch
+        description: "Main LAN switch"
+      - ref: AP1
+        type: openwrt-ap
+        description: "Wireless access point"
+      - ref: PC1
+        type: ubuntu-desktop
+        description: "Employee workstation 1"
+      - ref: PC2
+        type: ubuntu-desktop
+        description: "Employee workstation 2"
+      - ref: SRV1
+        type: nginx-server
+        description: "Local web server"
+    
+    networks:
+      - name: "internet"
+        type: "wan"
+        subnet: "203.0.113.0/24"
+        description: "Simulated internet connection"
+      - name: "office-lan"
+        type: "lan" 
+        subnet: "192.168.1.0/24"
+        dhcp_enabled: true
+        dhcp_range: "192.168.1.100-192.168.1.200"
+        description: "Main office network"
+    
+    links:
+      - [R1.eth0, internet]
+      - [R1.eth1, office-lan]
+      - [SW1.port1, office-lan]
+      - [AP1.eth0, office-lan]  
+      - [PC1.eth0, office-lan]
+      - [PC2.eth0, office-lan]
+      - [SRV1.eth0, office-lan]
+    
+    training_scenarios:
+      - "Basic network connectivity testing"
+      - "DHCP configuration and troubleshooting"
+      - "Wireless network setup"
+      - "Basic firewall rules"
+      - "Network monitoring fundamentals"
+
+  small-office-secure:
+    name: "Small Office - Secure Network"
+    description: "Security-focused small office with firewall, IDS, and segmentation"
+    category: "soho"
+    difficulty: "intermediate"
+    estimated_time: "25 minutes"
+    resource_requirements:
+      min_ram_gb: 10
+      min_disk_gb: 100
+      estimated_devices: 8
+    
+    devices:
+      - ref: RTR1
+        type: vyos-router
+        description: "Edge router"
+      - ref: FW1
+        type: pfsense-fw
+        description: "Perimeter firewall"
+      - ref: IDS1
+        type: suricata-ids
+        description: "Intrusion detection system"
+      - ref: SW-LAN
+        type: ovs-switch
+        description: "LAN switch with VLANs"
+      - ref: SW-DMZ
+        type: ovs-switch
+        description: "DMZ switch"
+      - ref: WEB1
+        type: nginx-server
+        description: "Public web server"
+      - ref: PC1
+        type: ubuntu-desktop
+        description: "User workstation"
+      - ref: KALI1
+        type: kali-linux
+        description: "Security testing platform"
+    
+    networks:
+      - name: "wan"
+        type: "wan"
+        subnet: "203.0.113.0/24"
+      - name: "dmz"
+        type: "dmz"
+        subnet: "10.0.10.0/24"
+      - name: "lan"
+        type: "lan"
+        subnet: "192.168.10.0/24"
+        vlan: 10
+      - name: "security"
+        type: "management"
+        subnet: "192.168.200.0/24"
+        vlan: 200
+    
+    links:
+      - [RTR1.eth0, wan]
+      - [RTR1.eth1, FW1.wan]
+      - [FW1.dmz, dmz]
+      - [FW1.lan, lan]
+      - [SW-DMZ.port1, dmz]
+      - [SW-LAN.port1, lan]
+      - [WEB1.eth0, dmz]
+      - [PC1.eth0, lan]
+      - [KALI1.eth0, security]
+      - [IDS1.eth0, security]
+      - [IDS1.eth1, lan] # Mirror port for monitoring
+    
+    training_scenarios:
+      - "Network segmentation with VLANs"
+      - "Firewall rule configuration"
+      - "IDS signature tuning"
+      - "Penetration testing methodologies"
+      - "Security incident response"
+
+  # =============================================================================
+  # ENTERPRISE NETWORK TEMPLATES
+  # =============================================================================
+
+  enterprise-basic:
+    name: "Enterprise Network - Basic"
+    description: "Basic enterprise network with core, distribution, and access layers"
+    category: "enterprise"
+    difficulty: "intermediate"
+    estimated_time: "30 minutes"
+    resource_requirements:
+      min_ram_gb: 14
+      min_disk_gb: 150
+      estimated_devices: 10
+    
+    devices:
+      - ref: CORE-R1
+        type: cisco-iosv
+        description: "Core router 1"
+      - ref: CORE-R2
+        type: cisco-iosv
+        description: "Core router 2 (redundancy)"
+      - ref: DIST-SW1
+        type: cisco-iosv-l2
+        description: "Distribution switch 1"
+      - ref: DIST-SW2  
+        type: cisco-iosv-l2
+        description: "Distribution switch 2"
+      - ref: ACC-SW1
+        type: ovs-switch
+        description: "Access switch - Floor 1"
+      - ref: ACC-SW2
+        type: ovs-switch
+        description: "Access switch - Floor 2"
+      - ref: FW-EDGE
+        type: pfsense-fw
+        description: "Edge firewall"
+      - ref: SRV-AD
+        type: windows-ad
+        description: "Active Directory server"
+      - ref: SRV-WEB
+        type: nginx-server
+        description: "Internal web server"
+      - ref: PC-USER1
+        type: windows10
+        description: "User workstation"
+    
+    networks:
+      - name: "wan"
+        type: "wan"
+        subnet: "203.0.113.0/30"
+      - name: "core"
+        type: "core"
+        subnet: "10.0.0.0/30"
+      - name: "servers"
+        type: "lan"
+        subnet: "10.0.10.0/24"
+        vlan: 10
+      - name: "users"
+        type: "lan"
+        subnet: "10.0.20.0/24"
+        vlan: 20
+      - name: "mgmt"
+        type: "management"
+        subnet: "192.168.100.0/24"
+        vlan: 100
+    
+    training_scenarios:
+      - "Three-tier network design"
+      - "VLAN configuration and inter-VLAN routing"
+      - "Spanning Tree Protocol (STP)"
+      - "OSPF routing protocol"
+      - "Active Directory integration"
+
+  # =============================================================================
+  # CYBERSECURITY TRAINING TEMPLATES  
+  # =============================================================================
+
+  pentest-lab:
+    name: "Penetration Testing Lab"
+    description: "Complete penetration testing environment with vulnerable targets"
+    category: "security"
+    difficulty: "advanced"
+    estimated_time: "40 minutes"
+    resource_requirements:
+      min_ram_gb: 16
+      min_disk_gb: 200
+      estimated_devices: 12
+    
+    devices:
+      - ref: EDGE-RTR
+        type: vyos-router
+        description: "Edge router (attack entry point)"
+      - ref: FIREWALL
+        type: pfsense-fw
+        description: "Perimeter firewall (bypass target)"
+      - ref: IDS-SENSOR
+        type: suricata-ids
+        description: "IDS for attack detection"
+      - ref: DMZ-WEB
+        type: vulnerable-web
+        description: "Vulnerable web application"
+      - ref: DMZ-DB
+        type: mysql-server
+        description: "Database server (lateral movement target)"
+      - ref: INT-AD
+        type: windows-ad
+        description: "Active Directory (privilege escalation target)"
+      - ref: INT-FILE
+        type: ubuntu-desktop
+        description: "File server (data exfiltration target)"
+      - ref: USER-PC1
+        type: windows10
+        description: "User workstation (phishing target)"
+      - ref: USER-PC2
+        type: ubuntu-desktop
+        description: "Developer workstation"
+      - ref: KALI-EXTERN
+        type: kali-linux
+        description: "External attacker platform"
+      - ref: KALI-INTERN
+        type: kali-linux
+        description: "Internal red team platform"
+      - ref: SIEM
+        type: wazuh-manager
+        description: "SIEM for attack correlation"
+    
+    networks:
+      - name: "internet"
+        type: "wan"
+        subnet: "203.0.113.0/24"
+      - name: "dmz"
+        type: "dmz" 
+        subnet: "10.0.10.0/24"
+      - name: "internal"
+        type: "lan"
+        subnet: "192.168.10.0/24"
+      - name: "users"
+        type: "lan"
+        subnet: "192.168.20.0/24"
+      - name: "security"
+        type: "management"
+        subnet: "192.168.200.0/24"
+    
+    training_scenarios:
+      - "External reconnaissance and enumeration"
+      - "Web application penetration testing"
+      - "SQL injection and database attacks"
+      - "Lateral movement techniques"
+      - "Active Directory attacks (Kerberoasting, etc.)"
+      - "Privilege escalation"
+      - "Data exfiltration techniques"
+      - "Attack detection and response"
+      - "Blue team vs. Red team exercises"
+
+  # =============================================================================
+  # IoT & INDUSTRIAL TEMPLATES
+  # =============================================================================
+
+  smart-office:
+    name: "Smart Office IoT Network"
+    description: "Modern office with IoT devices and building automation"
+    category: "iot"
+    difficulty: "intermediate"
+    estimated_time: "35 minutes"
+    resource_requirements:
+      min_ram_gb: 8
+      min_disk_gb: 80
+      estimated_devices: 9
+    
+    devices:
+      - ref: CORE-RTR
+        type: vyos-router
+        description: "Core network router"
+      - ref: IOT-GW
+        type: home-assistant
+        description: "IoT gateway and automation hub"
+      - ref: CAMERA1
+        type: rtsp-camera
+        description: "Security camera - Lobby"
+      - ref: CAMERA2
+        type: rtsp-camera
+        description: "Security camera - Parking"
+      - ref: VOIP-PBX
+        type: asterisk-pbx
+        description: "VoIP phone system"
+      - ref: NAS-STOR
+        type: truenas-core
+        description: "Network storage for recordings"
+      - ref: PC-ADMIN
+        type: ubuntu-desktop
+        description: "IT administrator workstation"
+      - ref: MON-SRV
+        type: zabbix-server
+        description: "Infrastructure monitoring"
+      - ref: KALI-SEC
+        type: kali-linux
+        description: "Security assessment platform"
+    
+    networks:
+      - name: "corporate"
+        type: "lan"
+        subnet: "192.168.1.0/24"
+        vlan: 1
+      - name: "iot"
+        type: "lan"
+        subnet: "192.168.10.0/24"
+        vlan: 10
+      - name: "security"
+        type: "lan"
+        subnet: "192.168.20.0/24"
+        vlan: 20
+      - name: "storage"
+        type: "lan"
+        subnet: "192.168.30.0/24"
+        vlan: 30
+      - name: "mgmt"
+        type: "management"
+        subnet: "192.168.100.0/24"
+        vlan: 100
+    
+    training_scenarios:
+      - "IoT device security assessment"
+      - "Network segmentation for IoT"
+      - "VoIP security testing"
+      - "Camera system vulnerabilities"
+      - "Building automation protocols"
+
+  industrial-scada:
+    name: "Industrial SCADA Network"
+    description: "Industrial control system with SCADA, PLCs, and HMI"
+    category: "industrial"
+    difficulty: "advanced"
+    estimated_time: "45 minutes"
+    resource_requirements:
+      min_ram_gb: 10
+      min_disk_gb: 120
+      estimated_devices: 8
+    
+    devices:
+      - ref: CORP-RTR
+        type: vyos-router
+        description: "Corporate network router"
+      - ref: IND-FW
+        type: iptables-fw
+        description: "Industrial network firewall"
+      - ref: SCADA-HMI
+        type: ubuntu-desktop
+        description: "SCADA HMI workstation"
+      - ref: PLC1
+        type: openplc-runtime
+        description: "Programmable Logic Controller 1"
+      - ref: PLC2
+        type: openplc-runtime
+        description: "Programmable Logic Controller 2"
+      - ref: MODBUS-SIM
+        type: modbus-simulator
+        description: "Modbus device simulator"
+      - ref: ENG-WS
+        type: windows10
+        description: "Engineering workstation"
+      - ref: KALI-ICS
+        type: kali-linux
+        description: "ICS security testing platform"
+    
+    networks:
+      - name: "corporate"
+        type: "lan"
+        subnet: "192.168.1.0/24"
+      - name: "industrial"
+        type: "industrial"
+        subnet: "10.0.1.0/24"
+      - name: "control"
+        type: "control"
+        subnet: "10.0.2.0/24"
+    
+    training_scenarios:
+      - "Industrial protocol security (Modbus, DNP3)"
+      - "PLC programming and security"
+      - "SCADA system penetration testing"
+      - "Industrial network segmentation"
+      - "Critical infrastructure protection"
+
+  # =============================================================================
+  # DATA CENTER & CLOUD TEMPLATES
+  # =============================================================================
+
+  datacenter-basic:
+    name: "Basic Data Center"
+    description: "Multi-tier data center with web, app, and database tiers"
+    category: "datacenter"
+    difficulty: "intermediate" 
+    estimated_time: "35 minutes"
+    resource_requirements:
+      min_ram_gb: 18
+      min_disk_gb: 180
+      estimated_devices: 11
+    
+    devices:
+      - ref: CORE-SW1
+        type: cisco-iosv-l2
+        description: "Core switch 1"
+      - ref: CORE-SW2
+        type: cisco-iosv-l2
+        description: "Core switch 2"
+      - ref: LB-VIP
+        type: nginx-server # Acting as load balancer
+        description: "Load balancer"
+      - ref: WEB1
+        type: nginx-server
+        description: "Web server 1"
+      - ref: WEB2
+        type: nginx-server
+        description: "Web server 2"
+      - ref: APP1
+        type: ubuntu-desktop # Custom app server
+        description: "Application server 1"
+      - ref: APP2
+        type: ubuntu-desktop
+        description: "Application server 2"
+      - ref: DB-MASTER
+        type: mysql-server
+        description: "Database master"
+      - ref: DB-SLAVE
+        type: mysql-server
+        description: "Database slave"
+      - ref: STORAGE
+        type: minio-server
+        description: "Object storage"
+      - ref: MONITOR
+        type: zabbix-server
+        description: "Infrastructure monitoring"
+    
+    networks:
+      - name: "frontend"
+        type: "dmz"
+        subnet: "10.0.10.0/24"
+      - name: "application"
+        type: "lan"
+        subnet: "10.0.20.0/24"
+      - name: "database"
+        type: "backend"
+        subnet: "10.0.30.0/24"
+      - name: "storage"
+        type: "backend"
+        subnet: "10.0.40.0/24"
+      - name: "management"
+        type: "management"
+        subnet: "192.168.100.0/24"
+    
+    training_scenarios:
+      - "Multi-tier application architecture"
+      - "Load balancing and high availability"
+      - "Database replication setup"
+      - "Storage area network (SAN) concepts"
+      - "Data center monitoring and alerting"
+
+# Template categories for organization
+categories:
+  - id: "soho"
+    name: "Small Office / Home Office"
+    description: "Small-scale networks for offices and home environments"
+    
+  - id: "enterprise"
+    name: "Enterprise Networks"
+    description: "Large-scale corporate and campus networks"
+    
+  - id: "security"
+    name: "Cybersecurity Training"
+    description: "Penetration testing, red team, and security assessment labs"
+    
+  - id: "iot"
+    name: "IoT & Smart Systems"
+    description: "Internet of Things and smart building networks"
+    
+  - id: "industrial"
+    name: "Industrial & SCADA"
+    description: "Industrial control systems and critical infrastructure"
+    
+  - id: "datacenter"
+    name: "Data Center & Cloud"
+    description: "Data center infrastructure and cloud architectures"
+
+# Default constraints that can be overridden per template
+default_constraints:
+  max_cpu_ratio: 0.7
+  max_ram_ratio: 0.7  
+  min_disk_free_gb: 20
+  deployment_timeout_minutes: 60
+  validation_retries: 3

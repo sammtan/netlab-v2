@@ -1,0 +1,169 @@
+# NetLab Isolated Development Environment (IDEV)
+# This container provides all tools needed for cross-platform development
+# without affecting the host system
+
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Set up workspace
+WORKDIR /workspace
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    # Basic development tools
+    curl \
+    wget \
+    git \
+    vim \
+    unzip \
+    build-essential \
+    pkg-config \
+    # Python development
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    # Virtualization development tools
+    libvirt-dev \
+    libvirt-clients \
+    qemu-utils \
+    # Network tools for development
+    iproute2 \
+    bridge-utils \
+    iptables \
+    openvswitch-common \
+    openvswitch-switch \
+    # Container tools
+    docker.io \
+    docker-compose \
+    # Image manipulation tools
+    qemu-img \
+    genisoimage \
+    # Security and verification
+    gnupg \
+    ca-certificates \
+    # Documentation tools
+    pandoc \
+    graphviz \
+    # Debugging and analysis
+    tcpdump \
+    netcat-openbsd \
+    telnet \
+    # Clean up
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python package manager
+RUN pip3 install --upgrade pip setuptools wheel
+
+# Install Python development dependencies
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+RUN pip3 install -r /tmp/requirements-dev.txt
+
+# Install additional development tools via pip
+RUN pip3 install \
+    # Code quality tools
+    black \
+    flake8 \
+    mypy \
+    isort \
+    pre-commit \
+    # Testing tools
+    pytest \
+    pytest-cov \
+    pytest-mock \
+    pytest-asyncio \
+    # Documentation tools
+    sphinx \
+    sphinx-rtd-theme \
+    # Automation tools
+    packer \
+    invoke \
+    # Network automation
+    netmiko \
+    napalm \
+    ansible-core
+
+# Create non-root user for development
+RUN groupadd -r netlab && useradd -r -g netlab -m -d /home/netlab -s /bin/bash netlab
+
+# Set up proper permissions
+RUN chown -R netlab:netlab /workspace
+
+# Install Go (for potential backend development)
+ENV GO_VERSION=1.21.5
+RUN wget https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm go${GO_VERSION}.linux-amd64.tar.gz
+
+# Set up Go environment
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/go"
+ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Create Go workspace
+RUN mkdir -p /go/{bin,src,pkg} && chown -R netlab:netlab /go
+
+# Install useful Go tools
+RUN go install github.com/spf13/cobra-cli@latest && \
+    go install github.com/goreleaser/goreleaser@latest
+
+# Set up development environment variables
+ENV NETLAB_DEV=true
+ENV NETLAB_WORKSPACE=/workspace
+ENV PYTHONPATH=/workspace:$PYTHONPATH
+
+# Set up git safe directory
+RUN git config --global --add safe.directory /workspace
+
+# Create directories for development
+RUN mkdir -p /workspace/{logs,builds,cache,tmp} && \
+    chown -R netlab:netlab /workspace
+
+# Install Node.js for potential web UI development
+ENV NODE_VERSION=20
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
+    apt-get install -y nodejs
+
+# Switch to non-root user
+USER netlab
+
+# Set up Python virtual environment for isolation
+RUN python3 -m venv /home/netlab/venv
+
+# Activate virtual environment by default
+ENV PATH="/home/netlab/venv/bin:$PATH"
+
+# Install NetLab in development mode when container starts
+RUN echo 'if [ -f /workspace/pyproject.toml ]; then pip install -e /workspace; fi' >> /home/netlab/.bashrc
+
+# Set up convenient aliases
+RUN echo 'alias ll="ls -la"' >> /home/netlab/.bashrc && \
+    echo 'alias la="ls -la"' >> /home/netlab/.bashrc && \
+    echo 'alias grep="grep --color=auto"' >> /home/netlab/.bashrc && \
+    echo 'alias uvdnl="python -m cli.main"' >> /home/netlab/.bashrc
+
+# Create helpful development scripts
+RUN echo '#!/bin/bash\ncd /workspace && python -m pytest tests/ "$@"' > /home/netlab/test.sh && \
+    chmod +x /home/netlab/test.sh
+
+RUN echo '#!/bin/bash\ncd /workspace && python -m cli.main "$@"' > /home/netlab/netlab.sh && \
+    chmod +x /home/netlab/netlab.sh
+
+# Set up development prompt
+RUN echo 'export PS1="[NetLab-Dev] \u@\h:\w\$ "' >> /home/netlab/.bashrc
+
+# Health check to ensure the container is working
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python3 -c "import sys; print('NetLab IDEV OK'); sys.exit(0)"
+
+# Default command
+CMD ["/bin/bash"]
+
+# Labels for container identification
+LABEL maintainer="NetLab Team <dev@netlab.dev>"
+LABEL description="NetLab Isolated Development Environment"
+LABEL version="1.0.0"
+LABEL org.opencontainers.image.source="https://github.com/netlab/uvdnl"

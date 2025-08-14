@@ -1,0 +1,118 @@
+# NetLab V2 - Isolated Development Environment (IDEV)
+# This container provides a complete development environment for NetLab
+# without contaminating the host system
+
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install sudo first, then set up development user (non-root for security)
+RUN apt-get update && apt-get install -y sudo && \
+    useradd -m -s /bin/bash -G sudo netlab && \
+    echo 'netlab ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/netlab
+
+# Install base development tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    curl \
+    wget \
+    unzip \
+    software-properties-common \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    python3-venv \
+    qemu-system-x86 \
+    qemu-utils \
+    libvirt-dev \
+    libvirt-clients \
+    openvswitch-switch \
+    bridge-utils \
+    iproute2 \
+    tcpdump \
+    docker.io \
+    docker-compose \
+    genisoimage \
+    cpio \
+    gpg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install latest Python and pip
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Install Python development dependencies
+COPY requirements-dev.txt /tmp/
+RUN pip3 install --no-cache-dir -r /tmp/requirements-dev.txt
+
+# Additional specialized tools already installed from requirements-dev.txt
+
+# Install Go (for some networking tools)
+RUN wget -O- https://golang.org/dl/go1.21.5.linux-amd64.tar.gz | tar -C /usr/local -xz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Install Rust (for some high-performance tools)
+USER netlab
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/home/netlab/.cargo/bin:${PATH}"
+
+# Switch back to root for final setup
+USER root
+
+# Create working directories
+RUN mkdir -p /workspace/src && \
+    mkdir -p /workspace/build && \
+    mkdir -p /workspace/toolchains && \
+    mkdir -p /workspace/artifacts && \
+    chown -R netlab:netlab /workspace
+
+# Set up environment variables
+ENV WORKSPACE="/workspace"
+ENV PYTHONPATH="/workspace/src"
+ENV NETLAB_DEV="true"
+
+# Create development entrypoint
+COPY <<'EOF' /usr/local/bin/dev-entrypoint.sh
+#!/bin/bash
+set -e
+
+echo "NetLab V2 - Isolated Development Environment (IDEV)"
+echo "=================================================="
+echo "User: $(whoami)"
+echo "Python: $(python --version)"
+echo "Workspace: ${WORKSPACE}"
+echo "PYTHONPATH: ${PYTHONPATH}"
+echo ""
+echo "Available commands:"
+echo "  make dev.setup    - Initialize development environment"
+echo "  make dev.test     - Run tests"
+echo "  make build.images - Build device images"
+echo "  make build.tool   - Build NetLab CLI"
+echo ""
+
+# Initialize git if not already done
+if [ ! -d "/workspace/src/.git" ]; then
+    echo "Initializing git repository..."
+    cd /workspace/src
+    git init
+    git config user.name "NetLab Developer"
+    git config user.email "dev@netlab.local"
+fi
+
+exec "$@"
+EOF
+
+RUN chmod +x /usr/local/bin/dev-entrypoint.sh
+
+# Switch to development user
+USER netlab
+WORKDIR /workspace
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/dev-entrypoint.sh"]
+CMD ["/bin/bash"]

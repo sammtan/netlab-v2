@@ -1,0 +1,334 @@
+name: enterprise-network-lab
+description: Enterprise network infrastructure with routers, firewalls, servers, and monitoring - rich non-end-user devices
+version: "2.0"
+
+# Resource constraints based on host capacity
+# Available: 23.9GB RAM, 90GB disk, 16 CPU cores
+constraints:
+  max_ram: 23500  # MB (23.5GB, leaving buffer)
+  max_disk: 90000  # MB (90GB)
+  max_cpu: 14     # cores (leaving buffer)
+
+# Network segments
+networks:
+  management:
+    subnet: "10.0.0.0/24"
+    gateway: "10.0.0.1"
+    description: "Management network for device administration"
+    
+  wan:
+    subnet: "203.0.113.0/24" 
+    gateway: "203.0.113.1"
+    description: "WAN/Internet simulation"
+    
+  dmz:
+    subnet: "192.168.100.0/24"
+    gateway: "192.168.100.1" 
+    description: "DMZ for public services"
+    
+  internal:
+    subnet: "172.16.0.0/24"
+    gateway: "172.16.0.1"
+    description: "Internal corporate network"
+    
+  servers:
+    subnet: "10.10.0.0/24"
+    gateway: "10.10.0.1"
+    description: "Server farm network"
+    
+  monitoring:
+    subnet: "10.99.0.0/24"
+    gateway: "10.99.0.1"
+    description: "Network monitoring and management"
+
+# Devices - Focus on network infrastructure and enterprise services
+devices:
+  # Core Network Infrastructure
+  edge-router:
+    type: vyos-router
+    networks:
+      - wan
+      - dmz
+    resources:
+      ram: 1024
+      disk: 4000
+      cpu: 2
+    config:
+      protocols: ["bgp", "ospf", "static"]
+      features: ["nat", "firewall", "qos"]
+    management_ip: "10.0.0.10"
+    
+  core-router:
+    type: vyos-router
+    networks:
+      - dmz
+      - internal
+      - servers
+    resources:
+      ram: 1024
+      disk: 4000
+      cpu: 2
+    config:
+      protocols: ["ospf", "eigrp", "vrrp"]
+      features: ["acl", "qos", "multicast"]
+    management_ip: "10.0.0.11"
+    
+  distribution-switch:
+    type: cisco-switch
+    networks:
+      - internal
+      - servers
+      - monitoring
+    resources:
+      ram: 512
+      disk: 2000
+      cpu: 1
+    config:
+      vlans: [10, 20, 30, 99]
+      spanning_tree: "rapid-pvst"
+      features: ["port-security", "dhcp-snooping"]
+    management_ip: "10.0.0.12"
+    
+  access-switch:
+    type: cisco-switch
+    networks:
+      - internal
+      - monitoring
+    resources:
+      ram: 512
+      disk: 2000
+      cpu: 1
+    config:
+      vlans: [10, 20, 99]
+      features: ["port-security", "voice-vlan"]
+    management_ip: "10.0.0.13"
+
+  # Security Infrastructure
+  perimeter-firewall:
+    type: pfsense-firewall
+    networks:
+      - wan
+      - dmz
+    resources:
+      ram: 2048
+      disk: 8000
+      cpu: 2
+    config:
+      rules: ["wan-to-dmz", "dmz-to-internal-deny"]
+      features: ["ips", "vpn", "load-balancing"]
+      packages: ["suricata", "haproxy"]
+    management_ip: "10.0.0.20"
+    
+  internal-firewall:
+    type: pfsense-firewall
+    networks:
+      - dmz
+      - internal
+      - servers
+    resources:
+      ram: 2048
+      disk: 8000
+      cpu: 2
+    config:
+      rules: ["internal-to-servers", "servers-to-dmz"]
+      features: ["application-control", "web-filter"]
+    management_ip: "10.0.0.21"
+    
+  ids-sensor:
+    type: suricata-ids
+    networks:
+      - dmz
+      - internal
+    resources:
+      ram: 3072
+      disk: 10000
+      cpu: 2
+    config:
+      mode: "inline"
+      rulesets: ["emerging-threats", "custom"]
+      features: ["file-extraction", "lua-output"]
+    management_ip: "10.0.0.22"
+
+  # Server Infrastructure
+  dns-server:
+    type: bind9-server
+    networks:
+      - servers
+      - monitoring
+    resources:
+      ram: 1024
+      disk: 3000
+      cpu: 1
+    config:
+      zones: ["corp.local", "lab.local"]
+      features: ["dnssec", "views", "logging"]
+    management_ip: "10.0.0.30"
+    
+  dhcp-server:
+    type: isc-dhcp-server
+    networks:
+      - servers
+      - internal
+    resources:
+      ram: 512
+      disk: 2000
+      cpu: 1
+    config:
+      scopes: ["172.16.0.0/24", "10.10.0.0/24"]
+      features: ["reservations", "failover"]
+    management_ip: "10.0.0.31"
+    
+  web-server:
+    type: nginx-server
+    networks:
+      - dmz
+      - servers
+    resources:
+      ram: 1024
+      disk: 5000
+      cpu: 1
+    config:
+      sites: ["corporate", "intranet", "api"]
+      features: ["ssl", "load-balancing", "caching"]
+    management_ip: "10.0.0.32"
+    
+  database-server:
+    type: postgresql-server
+    networks:
+      - servers
+    resources:
+      ram: 2048
+      disk: 10000
+      cpu: 2
+    config:
+      databases: ["corporate", "logs", "inventory"]
+      features: ["replication", "backup", "ssl"]
+    management_ip: "10.0.0.33"
+    
+  file-server:
+    type: samba-server
+    networks:
+      - servers
+      - internal
+    resources:
+      ram: 1024
+      disk: 8000
+      cpu: 1
+    config:
+      shares: ["public", "departments", "backups"]
+      features: ["ad-integration", "acl", "audit"]
+    management_ip: "10.0.0.34"
+
+  # Monitoring & Management Infrastructure
+  siem-server:
+    type: elasticsearch-siem
+    networks:
+      - monitoring
+      - servers
+    resources:
+      ram: 4096
+      disk: 15000
+      cpu: 2
+    config:
+      components: ["elasticsearch", "logstash", "kibana"]
+      features: ["alerting", "reporting", "ml"]
+    management_ip: "10.0.0.40"
+    
+  nms-server:
+    type: zabbix-nms
+    networks:
+      - monitoring
+      - internal
+      - servers
+    resources:
+      ram: 2048
+      disk: 8000
+      cpu: 2
+    config:
+      monitoring: ["snmp", "agent", "ipmi"]
+      features: ["graphing", "alerting", "maps"]
+    management_ip: "10.0.0.41"
+    
+  log-server:
+    type: rsyslog-server
+    networks:
+      - monitoring
+      - servers
+    resources:
+      ram: 1024
+      disk: 10000
+      cpu: 1
+    config:
+      inputs: ["syslog", "snmp-traps", "netflow"]
+      features: ["filtering", "forwarding", "database"]
+    management_ip: "10.0.0.42"
+    
+  backup-server:
+    type: bacula-backup
+    networks:
+      - servers
+      - monitoring
+    resources:
+      ram: 1024
+      disk: 12000
+      cpu: 1
+    config:
+      clients: ["all-servers", "network-configs"]
+      features: ["compression", "encryption", "dedup"]
+    management_ip: "10.0.0.43"
+
+  # Network Services & Appliances  
+  load-balancer:
+    type: haproxy-lb
+    networks:
+      - dmz
+      - servers
+    resources:
+      ram: 1024
+      disk: 3000
+      cpu: 2
+    config:
+      backends: ["web-servers", "api-servers"]
+      features: ["ssl-termination", "health-checks"]
+    management_ip: "10.0.0.50"
+    
+  proxy-server:
+    type: squid-proxy
+    networks:
+      - internal
+      - wan
+    resources:
+      ram: 1024
+      disk: 5000
+      cpu: 1
+    config:
+      features: ["caching", "content-filter", "auth"]
+      policies: ["business-hours", "department-based"]
+    management_ip: "10.0.0.51"
+    
+  vpn-server:
+    type: openvpn-server
+    networks:
+      - wan
+      - internal
+    resources:
+      ram: 512
+      disk: 2000
+      cpu: 1
+    config:
+      clients: 50
+      features: ["certificate-auth", "split-tunnel"]
+    management_ip: "10.0.0.52"
+
+# Resource Summary (Total allocation)
+resource_summary:
+  total_ram: 23552  # MB
+  total_disk: 89000  # MB  
+  total_cpu: 14     # cores
+  device_count: 17
+  
+# Validation
+validation:
+  within_ram_limit: true   # 23.6GB < 23.9GB available
+  within_disk_limit: true  # 89GB < 90GB available  
+  within_cpu_limit: true   # 14 cores < 16 available

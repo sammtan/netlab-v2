@@ -1,0 +1,217 @@
+name: enterprise-infrastructure
+description: Enterprise network infrastructure lab with routers, firewalls, servers, and monitoring tools
+
+networks:
+  management:
+    subnet: "10.0.0.0/24"
+    description: "Management network for device administration"
+    
+  dmz:
+    subnet: "192.168.1.0/24"
+    description: "DMZ network for public-facing services"
+    
+  internal:
+    subnet: "172.16.0.0/24"
+    description: "Internal corporate network"
+    
+  monitoring:
+    subnet: "10.1.0.0/24"
+    description: "Dedicated monitoring and logging network"
+
+devices:
+  # Network Infrastructure
+  core-router:
+    device_type: vyos-router
+    backend_type: vm
+    cpu_cores: 1
+    memory_mb: 512
+    disk_size_gb: 4
+    description: "Core enterprise router"
+    networks:
+      - name: eth0
+        network: management
+        ip: 10.0.0.1
+      - name: eth1
+        network: dmz
+        ip: 192.168.1.1
+      - name: eth2
+        network: internal
+        ip: 172.16.0.1
+
+  edge-firewall:
+    device_type: pfsense-firewall
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 1024
+    disk_size_gb: 8
+    description: "Edge firewall with advanced security features"
+    networks:
+      - name: wan
+        network: dmz
+        ip: 192.168.1.254
+      - name: lan
+        network: internal
+        ip: 172.16.0.254
+
+  # DNS and DHCP Infrastructure
+  dns-server:
+    device_type: bind-dns
+    backend_type: vm
+    cpu_cores: 1
+    memory_mb: 1024
+    disk_size_gb: 10
+    description: "Primary DNS server with zone management"
+    networks:
+      - name: eth0
+        network: internal
+        ip: 172.16.0.10
+
+  dhcp-server:
+    device_type: isc-dhcp
+    backend_type: vm
+    cpu_cores: 1
+    memory_mb: 512
+    disk_size_gb: 4
+    description: "DHCP server for IP address management"
+    networks:
+      - name: eth0
+        network: internal
+        ip: 172.16.0.11
+
+  # Web Infrastructure
+  web-server:
+    device_type: nginx-server
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 2048
+    disk_size_gb: 20
+    description: "High-performance web server"
+    networks:
+      - name: eth0
+        network: dmz
+        ip: 192.168.1.80
+
+  load-balancer:
+    device_type: haproxy-lb
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 1536
+    disk_size_gb: 8
+    description: "Load balancer for web traffic distribution"
+    networks:
+      - name: eth0
+        network: dmz
+        ip: 192.168.1.100
+
+  # Database and Storage
+  database-server:
+    device_type: mysql-server
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 3072
+    disk_size_gb: 25
+    description: "MySQL database server with high memory allocation"
+    networks:
+      - name: eth0
+        network: internal
+        ip: 172.16.0.20
+
+  file-server:
+    device_type: samba-server
+    backend_type: vm
+    cpu_cores: 1
+    memory_mb: 1024
+    disk_size_gb: 15
+    description: "Samba file server for network storage"
+    networks:
+      - name: eth0
+        network: internal
+        ip: 172.16.0.21
+
+  # Monitoring and Management
+  monitoring-server:
+    device_type: zabbix-server
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 2048
+    disk_size_gb: 20
+    description: "Zabbix monitoring server for infrastructure monitoring"
+    networks:
+      - name: eth0
+        network: monitoring
+        ip: 10.1.0.10
+      - name: eth1
+        network: internal
+        ip: 172.16.0.30
+
+  log-server:
+    device_type: elk-stack
+    backend_type: vm
+    cpu_cores: 4
+    memory_mb: 4096
+    disk_size_gb: 30
+    description: "ELK Stack (Elasticsearch, Logstash, Kibana) for log analysis"
+    networks:
+      - name: eth0
+        network: monitoring
+        ip: 10.1.0.11
+
+  siem-server:
+    device_type: wazuh-server
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 2048
+    disk_size_gb: 20
+    description: "Wazuh SIEM server for security monitoring"
+    networks:
+      - name: eth0
+        network: monitoring
+        ip: 10.1.0.12
+
+  # Network Security
+  ids-server:
+    device_type: suricata-ids
+    backend_type: vm
+    cpu_cores: 2
+    memory_mb: 2048
+    disk_size_gb: 15
+    description: "Suricata IDS for network intrusion detection"
+    networks:
+      - name: eth0
+        network: monitoring
+        ip: 10.1.0.20
+      - name: eth1
+        network: dmz
+        ip: 192.168.1.200
+
+  # Mail Infrastructure
+  mail-server:
+    device_type: postfix-server
+    backend_type: vm
+    cpu_cores: 1
+    memory_mb: 1024
+    disk_size_gb: 12
+    description: "Postfix mail server for email services"
+    networks:
+      - name: eth0
+        network: internal
+        ip: 172.16.0.25
+
+metadata:
+  lab_type: "enterprise_infrastructure"
+  difficulty: "advanced" 
+  estimated_deployment_time: "45-60 minutes"
+  learning_objectives:
+    - "Network infrastructure design and management"
+    - "Enterprise service deployment and configuration"
+    - "Security monitoring and log analysis"
+    - "Load balancing and high availability"
+  resource_requirements:
+    total_memory_gb: 22.8
+    total_disk_gb: 191
+    total_cpu_cores: 22
+  scenarios:
+    - "Network service deployment"
+    - "Security monitoring setup"
+    - "Performance optimization"
+    - "Incident response simulation"

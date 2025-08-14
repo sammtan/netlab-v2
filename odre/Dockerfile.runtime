@@ -1,0 +1,116 @@
+# NetLab V2 - Open Devices Runtime Environment (ODRE)  
+# This container provides an isolated runtime for deployed network devices
+# Complete with embedded virtualization and networking stack
+
+FROM ubuntu:22.04
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Create runtime user  
+RUN apt-get update && apt-get install -y sudo && \
+    useradd -m -s /bin/bash -G sudo netlab && \
+    echo 'netlab ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/netlab
+
+# Install complete virtualization and networking stack
+RUN apt-get update && apt-get install -y \
+    # Core system tools
+    curl \
+    wget \
+    unzip \
+    ca-certificates \
+    gnupg \
+    pkg-config \
+    libvirt-dev \
+    # Full virtualization suite
+    qemu-system-x86 \
+    qemu-system-arm \
+    qemu-system-mips \
+    qemu-system-ppc \
+    qemu-utils \
+    qemu-kvm \
+    libvirt-daemon \
+    libvirt-clients \
+    libvirt-daemon-system \
+    # Container runtime
+    docker.io \
+    docker-compose \
+    lxc \
+    # Software-defined networking
+    openvswitch-switch \
+    openvswitch-common \
+    bridge-utils \
+    vlan \
+    # Network utilities  
+    iproute2 \
+    iptables \
+    ebtables \
+    tcpdump \
+    netcat \
+    nmap \
+    # Python runtime (minimal)
+    python3.11 \
+    python3-pip \
+    # File system tools
+    kpartx \
+    parted \
+    e2fsprogs \
+    dosfstools \
+    # Archive tools
+    cpio \
+    genisoimage \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python runtime dependencies (minimal set)
+RUN pip3 install --no-cache-dir \
+    pyyaml \
+    click \
+    psutil \
+    libvirt-python \
+    docker \
+    jinja2
+
+# Configure user groups (systemctl not available in container)
+RUN usermod -a -G libvirt netlab && \
+    usermod -a -G kvm netlab && \
+    usermod -a -G docker netlab
+
+# Create directory structure for device runtime
+RUN mkdir -p /netlab && \
+    mkdir -p /netlab/images && \
+    mkdir -p /netlab/images/cache && \
+    mkdir -p /netlab/images/base && \
+    mkdir -p /netlab/deployed && \
+    mkdir -p /netlab/networks && \
+    mkdir -p /netlab/configs && \
+    mkdir -p /netlab/logs && \
+    mkdir -p /netlab/state && \
+    chown -R netlab:netlab /netlab
+
+# Set up libvirt storage pool
+RUN mkdir -p /var/lib/libvirt/images/netlab && \
+    chown -R libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/netlab
+
+# Configure networking defaults
+RUN echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf && \
+    echo 'net.bridge.bridge-nf-call-iptables=0' >> /etc/sysctl.conf
+
+# Copy runtime entrypoint
+COPY runtime-entrypoint.sh /usr/local/bin/runtime-entrypoint.sh
+RUN chmod +x /usr/local/bin/runtime-entrypoint.sh
+
+# Environment variables
+ENV NETLAB_RUNTIME="odre"
+ENV NETLAB_HOME="/netlab"
+ENV LIBVIRT_DEFAULT_URI="qemu:///system"
+
+# Switch to runtime user
+USER netlab
+WORKDIR /netlab
+
+# Expose common ports for management interfaces
+EXPOSE 22 80 443 8080 9000
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/runtime-entrypoint.sh"]
+CMD ["/bin/bash"]

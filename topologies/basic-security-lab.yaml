@@ -1,0 +1,301 @@
+name: basic-security-lab
+description: Essential security testing environment for beginners
+version: "2.0"
+
+# Resource constraints optimized for learning
+constraints:
+  max_ram: 8192     # 8GB RAM
+  max_disk: 30000   # 30GB disk  
+  max_cpu: 6        # 6 CPU cores
+
+# Simplified network design for security fundamentals
+networks:
+  dmz:
+    subnet: "192.168.10.0/24"
+    gateway: "192.168.10.1"
+    purpose: "DMZ network for external-facing services"
+    security_zone: "untrusted"
+    
+  internal:
+    subnet: "192.168.20.0/24"
+    gateway: "192.168.20.1"
+    purpose: "Internal network for critical services"
+    security_zone: "trusted"
+
+# Essential VMs for security training
+vms:
+  - name: "edge-firewall"
+    type: "firewall"
+    network: "dmz"
+    ip: "192.168.10.10"
+    memory: 1024
+    disk: "4GB"
+    vnc_port: 5920
+    packages:
+      - "iptables"
+      - "nftables"
+      - "tcpdump"
+      - "nmap"
+    services:
+      - "sshd"
+      - "iptables"
+    configuration:
+      ip_forward: true
+      firewall_rules: "restrictive"
+      logging_enabled: true
+    description: "Main perimeter firewall with intrusion detection"
+
+  - name: "web-server"
+    type: "server"
+    network: "dmz"
+    ip: "192.168.10.20"
+    memory: 1536
+    disk: "6GB"
+    vnc_port: 5921
+    packages:
+      - "nginx"
+      - "php"
+      - "mysql-client"
+      - "ssl-cert"
+    services:
+      - "nginx"
+      - "php-fpm"
+      - "sshd"
+    configuration:
+      ssl_enabled: true
+      security_headers: true
+      access_logging: true
+    vulnerabilities:
+      - "outdated_php_version"
+      - "weak_ssl_ciphers"
+    description: "Web server with intentional security issues for testing"
+
+  - name: "database-server"
+    type: "database"
+    network: "internal"
+    ip: "192.168.20.10"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5922
+    packages:
+      - "mysql-server"
+      - "mysql-client"
+      - "backup-tools"
+    services:
+      - "mysql"
+      - "sshd"
+    configuration:
+      encryption_at_rest: true
+      backup_enabled: true
+      audit_logging: true
+    vulnerabilities:
+      - "default_credentials"
+      - "unencrypted_connections"
+    description: "Database server with security configurations and known issues"
+
+  - name: "client-workstation"
+    type: "workstation"
+    network: "internal"
+    ip: "192.168.20.100"
+    memory: 1536
+    disk: "6GB"
+    vnc_port: 5923
+    packages:
+      - "firefox"
+      - "wireshark"
+      - "nmap"
+      - "netcat"
+      - "curl"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "xfce"
+      security_tools: true
+    description: "Client workstation with security analysis tools"
+
+  - name: "security-monitor"
+    type: "security"
+    network: "internal"
+    ip: "192.168.20.50"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5924
+    packages:
+      - "suricata"
+      - "rsyslog"
+      - "logwatch"
+      - "fail2ban"
+    services:
+      - "suricata"
+      - "rsyslog"
+      - "sshd"
+    configuration:
+      ids_enabled: true
+      log_aggregation: true
+      alerting_enabled: true
+    description: "Network monitoring and intrusion detection system"
+
+# Network security policies
+security_policies:
+  - name: "dmz_to_internal_restricted"
+    from: "dmz"
+    to: "internal"
+    action: "allow"
+    ports: ["3306"]
+    protocol: "tcp"
+    conditions: ["established"]
+    logging: true
+    
+  - name: "internal_to_dmz_web"
+    from: "internal"
+    to: "dmz"
+    action: "allow"
+    ports: ["80", "443"]
+    protocol: "tcp"
+    logging: true
+    
+  - name: "block_direct_internet"
+    from: "internal"
+    to: "internet"
+    action: "deny"
+    logging: true
+    alert: true
+
+# Security training scenarios
+training_scenarios:
+  - name: "Network Reconnaissance"
+    description: "Learn to identify and enumerate network services"
+    difficulty: "beginner"
+    estimated_time: "30 minutes"
+    objectives:
+      - "Discover all active hosts in both networks"
+      - "Identify open ports and services"
+      - "Map network topology"
+      - "Document findings"
+    tools: ["nmap", "netcat", "curl"]
+    
+  - name: "Vulnerability Assessment"
+    description: "Identify security weaknesses in the infrastructure"
+    difficulty: "beginner"
+    estimated_time: "45 minutes"
+    objectives:
+      - "Scan for known vulnerabilities"
+      - "Test default credentials"
+      - "Identify misconfigurations"
+      - "Prioritize risks"
+    tools: ["nmap", "nikto", "hydra"]
+    
+  - name: "Network Monitoring"
+    description: "Set up and configure security monitoring"
+    difficulty: "intermediate"
+    estimated_time: "60 minutes"
+    objectives:
+      - "Configure IDS rules"
+      - "Set up log aggregation"
+      - "Create alerting rules"
+      - "Test detection capabilities"
+    tools: ["suricata", "rsyslog", "logwatch"]
+    
+  - name: "Incident Response"
+    description: "Respond to a simulated security incident"
+    difficulty: "intermediate"
+    estimated_time: "90 minutes"
+    objectives:
+      - "Detect suspicious activity"
+      - "Isolate affected systems"
+      - "Collect evidence"
+      - "Implement containment"
+    tools: ["wireshark", "tcpdump", "iptables"]
+
+# Automated security tests
+security_tests:
+  - name: "firewall_policy_test"
+    description: "Verify firewall rules are properly configured"
+    test_type: "connectivity"
+    expected_results:
+      - "DMZ to Internal database: ALLOW on port 3306"
+      - "Internal to DMZ web: ALLOW on ports 80,443"
+      - "Direct internet access: BLOCKED"
+      
+  - name: "service_hardening_test"
+    description: "Check if services follow security best practices"
+    test_type: "configuration"
+    checks:
+      - service: "ssh"
+        config: "PasswordAuthentication no"
+      - service: "nginx"
+        config: "server_tokens off"
+      - service: "mysql"
+        config: "bind-address 127.0.0.1"
+        
+  - name: "vulnerability_scan"
+    description: "Basic vulnerability assessment"
+    test_type: "security_scan"
+    tools: ["nmap", "nikto"]
+    target_hosts: ["all"]
+
+# Default credentials (for educational purposes)
+default_credentials:
+  - username: "admin"
+    password: "password123"
+    service: "ssh"
+    host: "web-server"
+    note: "Intentionally weak for training"
+    
+  - username: "root"
+    password: "mysql"
+    service: "mysql"
+    host: "database-server"
+    note: "Default MySQL root password"
+
+# Post-deployment configuration
+post_deployment:
+  - script: "configure-firewall-rules.sh"
+    description: "Set up basic firewall rules"
+    target: "edge-firewall"
+    
+  - script: "setup-vulnerable-webapp.sh"
+    description: "Deploy intentionally vulnerable web application"
+    target: "web-server"
+    
+  - script: "configure-database-security.sh"
+    description: "Set up database with security issues for training"
+    target: "database-server"
+    
+  - script: "setup-monitoring.sh"
+    description: "Configure IDS and logging"
+    target: "security-monitor"
+
+# Expected learning outcomes
+learning_outcomes:
+  - "Understand network segmentation concepts"
+  - "Learn to use network scanning tools"
+  - "Identify common security vulnerabilities"
+  - "Configure basic security monitoring"
+  - "Respond to security incidents"
+  - "Implement security controls"
+
+# Assessment criteria
+assessment:
+  - category: "Network Discovery"
+    tasks: 3
+    points: 25
+    
+  - category: "Vulnerability Identification"
+    tasks: 4
+    points: 30
+    
+  - category: "Security Configuration"
+    tasks: 3
+    points: 25
+    
+  - category: "Incident Response"
+    tasks: 2
+    points: 20
+
+# Resource usage estimates
+resource_estimates:
+  deployment_time: "8-12 minutes"
+  concurrent_users: "10-15"
+  suitable_for: ["beginners", "bootcamps", "certification_prep"]
+  prerequisites: ["basic_networking", "linux_fundamentals"]

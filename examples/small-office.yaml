@@ -1,0 +1,147 @@
+# Small Office Network Example
+# Basic network topology for a small office environment
+schema: v1
+name: "small-office-demo"
+description: "Small office network with router, firewall, switch, and endpoints"
+version: "1.0"
+
+# Use the predefined template as a base
+use_template: "small-office-secure"
+
+# Override specific device configurations
+overrides:
+  FW1:
+    # Increase firewall RAM for better performance
+    default:
+      ram_mb: 3072
+  
+  KALI1:
+    # Customize Kali Linux for this scenario
+    userdata:
+      packages: 
+        - nmap
+        - metasploit-framework
+        - wireshark
+        - john
+      users:
+        - name: "pentester"
+          groups: ["sudo"]
+          shell: "/bin/bash"
+
+# Host resource constraints for this deployment
+host_constraints:
+  max_cpu_ratio: 0.8  # Use up to 80% of CPU
+  max_ram_ratio: 0.8  # Use up to 80% of RAM
+  min_disk_free_gb: 30  # Keep 30GB free
+  
+# Deployment preferences
+placement:
+  runtime_preference: ["vm_libvirt", "ctr_docker", "vm_virtualbox"]
+  storage_pool: "netlab_small_office"
+
+# Custom network configuration
+network_overrides:
+  lan:
+    # Use different IP range
+    subnet: "192.168.50.0/24"
+    dhcp_range: "192.168.50.100-192.168.50.200"
+    dns_servers: ["8.8.8.8", "1.1.1.1"]
+  
+  dmz:
+    subnet: "10.0.50.0/24"
+    
+  security:
+    subnet: "192.168.250.0/24"
+
+# Training scenario configuration
+training:
+  scenario_type: "security_assessment"
+  objectives:
+    - "Perform network reconnaissance"
+    - "Identify vulnerable services"
+    - "Test firewall rule effectiveness"  
+    - "Practice lateral movement techniques"
+    - "Generate and analyze security logs"
+  
+  success_criteria:
+    - "Successfully ping all devices from management network"
+    - "Web server accessible from DMZ only"
+    - "IDS detecting and alerting on scan attempts"
+    - "Firewall blocking unauthorized connections"
+
+# Custom validation tests
+validation:
+  connectivity_tests:
+    - name: "Internet connectivity"
+      source: "PC1"
+      target: "8.8.8.8"
+      protocol: "icmp"
+      expected: "success"
+    
+    - name: "Internal web server access"
+      source: "PC1" 
+      target: "WEB1:80"
+      protocol: "http"
+      expected: "success"
+    
+    - name: "DMZ isolation test"
+      source: "WEB1"
+      target: "PC1:22"
+      protocol: "tcp"
+      expected: "blocked"
+  
+  security_tests:
+    - name: "IDS detection test"
+      action: "port_scan"
+      source: "KALI1"
+      target: "WEB1"
+      expected_alerts: ["PortScan", "Recon"]
+    
+    - name: "Firewall rule test"
+      action: "connection_attempt"
+      source: "external"
+      target: "PC1:3389"
+      expected: "blocked"
+
+# Post-deployment automation
+automation:
+  post_deploy_scripts:
+    - name: "Configure firewall rules"
+      target: "FW1"
+      script: "scripts/configure_pfsense_rules.sh"
+    
+    - name: "Setup IDS signatures"
+      target: "IDS1"
+      script: "scripts/configure_suricata.sh"
+    
+    - name: "Install security tools"
+      target: "KALI1"
+      script: "scripts/setup_kali_tools.sh"
+
+# Documentation and learning resources
+documentation:
+  network_diagram: "docs/small-office-network-diagram.svg"
+  setup_guide: "docs/small-office-setup.md"
+  learning_objectives: "docs/small-office-learning-objectives.md"
+  
+  references:
+    - title: "pfSense Firewall Configuration"
+      url: "https://docs.pfsense.org/firewall/index.html"
+    - title: "Suricata IDS Rules"
+      url: "https://suricata.readthedocs.io/en/latest/rules/"
+    - title: "Network Security Best Practices"
+      url: "https://www.nist.gov/cybersecurity"
+
+# Metadata for the lab management system
+metadata:
+  author: "NetLab Team"
+  created: "2024-01-15"
+  last_modified: "2024-01-15"
+  tags: ["security", "small-office", "beginner", "firewall", "ids"]
+  estimated_deployment_time: "25 minutes"
+  estimated_training_time: "2 hours"
+  difficulty_level: "intermediate"
+  prerequisites:
+    - "Basic networking knowledge"
+    - "Understanding of TCP/IP"
+    - "Familiarity with Linux command line"

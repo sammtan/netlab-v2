@@ -1,0 +1,698 @@
+# NetLab Device Catalog
+# Comprehensive device definitions for all network device categories
+schema: v1
+
+devices:
+  # =============================================================================
+  # NETWORK INFRASTRUCTURE DEVICES
+  # =============================================================================
+
+  # --- Routers ---
+  - id: vyos-router
+    name: "VyOS Router"
+    kind: router
+    runtime: vm
+    base_image: vyos-rolling
+    default:
+      vcpu: 1
+      ram_mb: 512
+      disk_gb: 8
+      nics: 2
+    provisioner: ansible
+    tags: [routing, ospf, bgp, vpn]
+    description: "Open-source network OS with enterprise routing features"
+
+  - id: cisco-iosv
+    name: "Cisco IOSv Router"
+    kind: router
+    runtime: vm
+    base_image: cisco-iosv
+    default:
+      vcpu: 1
+      ram_mb: 1024
+      disk_gb: 16
+      nics: 4
+    provisioner: ansible
+    tags: [routing, cisco, ospf, bgp, eigrp]
+    description: "Cisco IOS virtual router for lab environments"
+
+  - id: juniper-vmx
+    name: "Juniper vMX Router"
+    kind: router
+    runtime: vm
+    base_image: juniper-vmx
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 32
+      nics: 4
+    provisioner: ansible
+    tags: [routing, juniper, ospf, bgp, mpls]
+    description: "Juniper virtual MX router for enterprise networks"
+
+  - id: mikrotik-chr
+    name: "MikroTik Cloud Hosted Router"
+    kind: router
+    runtime: vm
+    base_image: mikrotik-chr
+    default:
+      vcpu: 1
+      ram_mb: 512
+      disk_gb: 8
+      nics: 4
+    provisioner: ansible
+    tags: [routing, mikrotik, ospf, bgp]
+    description: "MikroTik RouterOS virtual router"
+
+  - id: frr-router
+    name: "FRRouting Router"
+    kind: router
+    runtime: container
+    image: "frrouting/frr:stable"
+    default:
+      cpu_shares: 256
+      ram_mb: 256
+      nics: 2
+    provisioner: ansible
+    tags: [routing, ospf, bgp, isis, lightweight]
+    description: "Lightweight routing daemon container"
+
+  # --- Switches ---
+  - id: ovs-switch
+    name: "Open vSwitch"
+    kind: switch
+    runtime: container
+    image: "netlab/ovs:latest"
+    default:
+      cpu_shares: 128
+      ram_mb: 256
+      nics: 8
+    provisioner: ansible
+    tags: [switching, vlan, stp, openflow]
+    description: "Software-defined switch with OpenFlow support"
+
+  - id: cisco-iosv-l2
+    name: "Cisco IOSv Switch"
+    kind: switch
+    runtime: vm
+    base_image: cisco-iosv-l2
+    default:
+      vcpu: 1
+      ram_mb: 512
+      disk_gb: 8
+      nics: 24
+    provisioner: ansible
+    tags: [switching, cisco, vlan, stp]
+    description: "Cisco IOS virtual Layer 2 switch"
+
+  - id: linux-bridge
+    name: "Linux Bridge"
+    kind: switch
+    runtime: container
+    image: "alpine:latest"
+    default:
+      cpu_shares: 64
+      ram_mb: 128
+      nics: 8
+    provisioner: shell
+    tags: [switching, linux, basic]
+    description: "Simple Linux bridge for basic switching"
+
+  # --- Wireless ---
+  - id: openwrt-ap
+    name: "OpenWrt Access Point"
+    kind: ap
+    runtime: vm
+    base_image: openwrt
+    default:
+      vcpu: 1
+      ram_mb: 256
+      disk_gb: 4
+      nics: 2
+    provisioner: ansible
+    tags: [wireless, wifi, openwrt]
+    description: "OpenWrt-based wireless access point"
+
+  - id: hostapd-ap
+    name: "hostapd Access Point"
+    kind: ap
+    runtime: container
+    image: "netlab/hostapd:latest"
+    default:
+      cpu_shares: 128
+      ram_mb: 128
+      nics: 1
+    provisioner: ansible
+    tags: [wireless, wifi, hostapd, lightweight]
+    description: "Lightweight WiFi access point using hostapd"
+
+  # =============================================================================
+  # SECURITY APPLIANCES
+  # =============================================================================
+
+  # --- Firewalls ---
+  - id: pfsense-fw
+    name: "pfSense Firewall"
+    kind: firewall
+    runtime: vm
+    base_image: pfsense-ce
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 20
+      nics: 3
+    provisioner: ansible
+    tags: [firewall, nat, vpn, ids, freebsd]
+    description: "Open-source firewall with VPN and IDS capabilities"
+
+  - id: opnsense-fw
+    name: "OPNsense Firewall"
+    kind: firewall
+    runtime: vm
+    base_image: opnsense
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 20
+      nics: 3
+    provisioner: ansible
+    tags: [firewall, nat, vpn, ids, freebsd]
+    description: "OPNsense firewall with modern web interface"
+
+  - id: iptables-fw
+    name: "iptables Firewall"
+    kind: firewall
+    runtime: container
+    image: "ubuntu:22.04"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 2
+    provisioner: ansible
+    tags: [firewall, iptables, linux, lightweight]
+    description: "Linux iptables-based firewall"
+
+  # --- IDS/IPS ---
+  - id: suricata-ids
+    name: "Suricata IDS/IPS"
+    kind: ids
+    runtime: vm
+    base_image: ubuntu-server
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 50
+      nics: 2
+    provisioner: ansible
+    tags: [ids, ips, suricata, security]
+    description: "High-performance network IDS/IPS"
+
+  - id: snort-ids
+    name: "Snort IDS"
+    kind: ids
+    runtime: vm
+    base_image: ubuntu-server
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 50
+      nics: 2
+    provisioner: ansible
+    tags: [ids, snort, security]
+    description: "Classic network intrusion detection system"
+
+  - id: zeek-nms
+    name: "Zeek Network Monitor"
+    kind: ids
+    runtime: vm
+    base_image: ubuntu-server
+    default:
+      vcpu: 2
+      ram_mb: 3072
+      disk_gb: 100
+      nics: 2
+    provisioner: ansible
+    tags: [ids, zeek, network-analysis, security]
+    description: "Network analysis framework for security monitoring"
+
+  # --- VPN Gateways ---
+  - id: openvpn-server
+    name: "OpenVPN Server"
+    kind: vpn
+    runtime: container
+    image: "kylemanna/openvpn:latest"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 1
+    provisioner: ansible
+    tags: [vpn, openvpn, remote-access]
+    description: "OpenVPN server for secure remote access"
+
+  - id: wireguard-server
+    name: "WireGuard VPN Server"
+    kind: vpn
+    runtime: container
+    image: "linuxserver/wireguard:latest"
+    default:
+      cpu_shares: 128
+      ram_mb: 256
+      nics: 1
+    provisioner: ansible
+    tags: [vpn, wireguard, modern]
+    description: "Modern high-performance VPN server"
+
+  # =============================================================================
+  # DATA CENTER & SERVER INFRASTRUCTURE
+  # =============================================================================
+
+  # --- Web Servers ---
+  - id: nginx-server
+    name: "NGINX Web Server"
+    kind: web-server
+    runtime: container
+    image: "nginx:alpine"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 1
+    provisioner: ansible
+    tags: [web, nginx, http, reverse-proxy]
+    description: "High-performance web server and reverse proxy"
+
+  - id: apache-server
+    name: "Apache Web Server"
+    kind: web-server
+    runtime: container
+    image: "httpd:alpine"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 1
+    provisioner: ansible
+    tags: [web, apache, http]
+    description: "Popular open-source web server"
+
+  - id: vulnerable-web
+    name: "Vulnerable Web Application"
+    kind: web-server
+    runtime: container
+    image: "vulnerables/web-dvwa:latest"
+    default:
+      cpu_shares: 256
+      ram_mb: 1024
+      nics: 1
+    provisioner: ansible
+    tags: [web, vulnerable, security-testing, dvwa]
+    description: "Damn Vulnerable Web Application for penetration testing"
+
+  # --- Database Servers ---
+  - id: mysql-server
+    name: "MySQL Database Server"
+    kind: database
+    runtime: container
+    image: "mysql:8.0"
+    default:
+      cpu_shares: 512
+      ram_mb: 2048
+      nics: 1
+    provisioner: ansible
+    tags: [database, mysql, sql]
+    description: "Popular open-source relational database"
+
+  - id: postgresql-server
+    name: "PostgreSQL Database Server"
+    kind: database
+    runtime: container
+    image: "postgres:15"
+    default:
+      cpu_shares: 512
+      ram_mb: 2048
+      nics: 1
+    provisioner: ansible
+    tags: [database, postgresql, sql]
+    description: "Advanced open-source relational database"
+
+  - id: mongodb-server
+    name: "MongoDB Database Server"
+    kind: database
+    runtime: container
+    image: "mongo:6"
+    default:
+      cpu_shares: 512
+      ram_mb: 2048
+      nics: 1
+    provisioner: ansible
+    tags: [database, mongodb, nosql, document]
+    description: "Popular document-oriented NoSQL database"
+
+  # --- Directory Services ---
+  - id: windows-ad
+    name: "Windows Active Directory"
+    kind: directory
+    runtime: vm
+    base_image: windows-server-2022
+    default:
+      vcpu: 2
+      ram_mb: 4096
+      disk_gb: 80
+      nics: 1
+    provisioner: ansible
+    tags: [directory, active-directory, windows, ldap]
+    description: "Windows Active Directory domain controller"
+
+  - id: openldap-server
+    name: "OpenLDAP Server"
+    kind: directory
+    runtime: container
+    image: "osixia/openldap:latest"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 1
+    provisioner: ansible
+    tags: [directory, ldap, openldap]
+    description: "Open-source LDAP directory server"
+
+  # --- DNS/DHCP ---
+  - id: bind9-dns
+    name: "BIND9 DNS Server"
+    kind: dns
+    runtime: container
+    image: "internetsystemsconsortium/bind9:latest"
+    default:
+      cpu_shares: 128
+      ram_mb: 256
+      nics: 1
+    provisioner: ansible
+    tags: [dns, bind9, authoritative]
+    description: "Authoritative DNS server"
+
+  - id: dnsmasq-server
+    name: "dnsmasq DNS/DHCP Server"
+    kind: dns
+    runtime: container
+    image: "netlab/dnsmasq:latest"
+    default:
+      cpu_shares: 64
+      ram_mb: 128
+      nics: 1
+    provisioner: ansible
+    tags: [dns, dhcp, dnsmasq, lightweight]
+    description: "Lightweight DNS and DHCP server"
+
+  # =============================================================================
+  # ENDPOINT DEVICES
+  # =============================================================================
+
+  # --- Linux Workstations ---
+  - id: ubuntu-desktop
+    name: "Ubuntu Desktop"
+    kind: endpoint
+    runtime: vm
+    base_image: ubuntu-desktop
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 25
+      nics: 1
+    provisioner: cloudinit
+    tags: [endpoint, ubuntu, linux, desktop]
+    description: "Ubuntu desktop workstation"
+
+  - id: linux-min
+    name: "Minimal Linux"
+    kind: endpoint
+    runtime: container
+    image: "alpine:latest"
+    default:
+      cpu_shares: 128
+      ram_mb: 256
+      nics: 1
+    provisioner: shell
+    tags: [endpoint, linux, minimal, alpine]
+    description: "Minimal Linux endpoint for testing"
+
+  - id: kali-linux
+    name: "Kali Linux"
+    kind: endpoint
+    runtime: vm
+    base_image: kali-linux
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 30
+      nics: 1
+    provisioner: cloudinit
+    tags: [endpoint, kali, security, penetration-testing]
+    description: "Kali Linux penetration testing distribution"
+
+  # --- Windows Endpoints ---
+  - id: windows10
+    name: "Windows 10 Workstation"
+    kind: endpoint
+    runtime: vm
+    base_image: windows-10
+    default:
+      vcpu: 2
+      ram_mb: 4096
+      disk_gb: 60
+      nics: 1
+    provisioner: ansible
+    tags: [endpoint, windows, workstation]
+    description: "Windows 10 workstation for testing"
+
+  - id: windows11
+    name: "Windows 11 Workstation"
+    kind: endpoint
+    runtime: vm
+    base_image: windows-11
+    default:
+      vcpu: 2
+      ram_mb: 4096
+      disk_gb: 70
+      nics: 1
+    provisioner: ansible
+    tags: [endpoint, windows, workstation, modern]
+    description: "Windows 11 workstation with modern features"
+
+  # =============================================================================
+  # IoT & INDUSTRIAL DEVICES
+  # =============================================================================
+
+  # --- IoT Gateways ---
+  - id: home-assistant
+    name: "Home Assistant IoT Hub"
+    kind: iot-gateway
+    runtime: vm
+    base_image: home-assistant
+    default:
+      vcpu: 1
+      ram_mb: 1024
+      disk_gb: 16
+      nics: 1
+    provisioner: ansible
+    tags: [iot, home-automation, zigbee, zwave]
+    description: "Home Assistant IoT platform"
+
+  - id: openhab-hub
+    name: "OpenHAB IoT Hub"
+    kind: iot-gateway
+    runtime: container
+    image: "openhab/openhab:latest"
+    default:
+      cpu_shares: 512
+      ram_mb: 1024
+      nics: 1
+    provisioner: ansible
+    tags: [iot, home-automation, java]
+    description: "OpenHAB home automation platform"
+
+  # --- Industrial Control ---
+  - id: openplc-runtime
+    name: "OpenPLC Runtime"
+    kind: plc
+    runtime: container
+    image: "netlab/openplc:latest"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 2
+    provisioner: ansible
+    tags: [industrial, plc, scada, modbus]
+    description: "Open-source PLC runtime for industrial simulation"
+
+  - id: modbus-simulator
+    name: "Modbus Device Simulator"
+    kind: industrial
+    runtime: container
+    image: "netlab/modbus-simulator:latest"
+    default:
+      cpu_shares: 128
+      ram_mb: 256
+      nics: 1
+    provisioner: ansible
+    tags: [industrial, modbus, simulation]
+    description: "Simulated Modbus devices for industrial scenarios"
+
+  # --- IP Cameras ---
+  - id: rtsp-camera
+    name: "RTSP IP Camera"
+    kind: camera
+    runtime: container
+    image: "netlab/rtsp-camera:latest"
+    default:
+      cpu_shares: 256
+      ram_mb: 512
+      nics: 1
+    provisioner: ansible
+    tags: [iot, camera, rtsp, surveillance]
+    description: "Simulated IP camera with RTSP stream"
+
+  # --- VoIP ---
+  - id: asterisk-pbx
+    name: "Asterisk PBX"
+    kind: voip
+    runtime: container
+    image: "netlab/asterisk:latest"
+    default:
+      cpu_shares: 512
+      ram_mb: 1024
+      nics: 1
+    provisioner: ansible
+    tags: [voip, asterisk, pbx, telephony]
+    description: "Asterisk-based VoIP PBX system"
+
+  # =============================================================================
+  # MONITORING & MANAGEMENT
+  # =============================================================================
+
+  # --- Network Management ---
+  - id: zabbix-server
+    name: "Zabbix Monitoring Server"
+    kind: nms
+    runtime: vm
+    base_image: ubuntu-server
+    default:
+      vcpu: 2
+      ram_mb: 2048
+      disk_gb: 50
+      nics: 1
+    provisioner: ansible
+    tags: [monitoring, nms, zabbix]
+    description: "Zabbix network monitoring system"
+
+  - id: nagios-server
+    name: "Nagios Monitoring Server"
+    kind: nms
+    runtime: container
+    image: "jasonrivers/nagios:latest"
+    default:
+      cpu_shares: 512
+      ram_mb: 1024
+      nics: 1
+    provisioner: ansible
+    tags: [monitoring, nms, nagios]
+    description: "Nagios network monitoring system"
+
+  # --- SIEM Systems ---
+  - id: wazuh-manager
+    name: "Wazuh SIEM Manager"
+    kind: siem
+    runtime: vm
+    base_image: ubuntu-server
+    default:
+      vcpu: 4
+      ram_mb: 4096
+      disk_gb: 100
+      nics: 1
+    provisioner: ansible
+    tags: [siem, wazuh, security, log-analysis]
+    description: "Wazuh security information and event management"
+
+  - id: elk-stack
+    name: "ELK Stack"
+    kind: siem
+    runtime: vm
+    base_image: ubuntu-server
+    default:
+      vcpu: 4
+      ram_mb: 8192
+      disk_gb: 200
+      nics: 1
+    provisioner: ansible
+    tags: [siem, elasticsearch, logstash, kibana, log-analysis]
+    description: "Elasticsearch, Logstash, and Kibana stack"
+
+  # =============================================================================
+  # STORAGE & VIRTUALIZATION
+  # =============================================================================
+
+  # --- Storage Systems ---
+  - id: truenas-core
+    name: "TrueNAS Core"
+    kind: storage
+    runtime: vm
+    base_image: truenas-core
+    default:
+      vcpu: 2
+      ram_mb: 4096
+      disk_gb: 100
+      nics: 1
+    provisioner: ansible
+    tags: [storage, nas, zfs, truenas]
+    description: "TrueNAS network-attached storage"
+
+  - id: minio-server
+    name: "MinIO Object Storage"
+    kind: storage
+    runtime: container
+    image: "minio/minio:latest"
+    default:
+      cpu_shares: 512
+      ram_mb: 1024
+      nics: 1
+    provisioner: ansible
+    tags: [storage, object-storage, s3-compatible]
+    description: "High-performance object storage server"
+
+  # --- Hypervisors ---
+  - id: proxmox-ve
+    name: "Proxmox Virtual Environment"
+    kind: hypervisor
+    runtime: vm
+    base_image: proxmox-ve
+    default:
+      vcpu: 4
+      ram_mb: 8192
+      disk_gb: 200
+      nics: 2
+    provisioner: ansible
+    tags: [virtualization, hypervisor, proxmox, kvm]
+    description: "Open-source virtualization management platform"
+
+# Device kind categories for organization
+categories:
+  - name: "Network Infrastructure"
+    kinds: [router, switch, hub, ap]
+    description: "Core networking devices"
+    
+  - name: "Security Appliances"
+    kinds: [firewall, ids, vpn, proxy]
+    description: "Security and filtering devices"
+    
+  - name: "Data Center"
+    kinds: [web-server, database, directory, dns, storage, hypervisor]
+    description: "Server and data center infrastructure"
+    
+  - name: "Endpoints"
+    kinds: [endpoint]
+    description: "User workstations and devices"
+    
+  - name: "IoT & Industrial"
+    kinds: [iot-gateway, plc, industrial, camera, voip]
+    description: "Internet of Things and industrial control systems"
+    
+  - name: "Management & Monitoring"
+    kinds: [nms, siem]
+    description: "Network monitoring and security management"

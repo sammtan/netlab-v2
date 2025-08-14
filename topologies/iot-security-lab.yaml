@@ -1,0 +1,720 @@
+name: iot-security-lab
+description: Internet of Things (IoT) security testing and analysis environment
+version: "2.0"
+
+# Optimized resources for IoT device simulation
+constraints:
+  max_ram: 10240    # 10GB RAM
+  max_disk: 45000   # 45GB disk
+  max_cpu: 8        # 8 CPU cores
+
+# IoT-specific network architecture
+networks:
+  iot_devices:
+    subnet: "10.0.1.0/24"
+    gateway: "10.0.1.1"
+    purpose: "IoT device network segment"
+    security_zone: "iot"
+    isolation: "partial"
+    
+  iot_management:
+    subnet: "10.0.10.0/24"
+    gateway: "10.0.10.1"
+    purpose: "IoT management and cloud services"
+    security_zone: "management"
+    
+  corporate_network:
+    subnet: "192.168.100.0/24"
+    gateway: "192.168.100.1"
+    purpose: "Corporate network with user workstations"
+    security_zone: "corporate"
+    
+  security_testing:
+    subnet: "172.16.1.0/24"
+    gateway: "172.16.1.1"
+    purpose: "Security testing and analysis tools"
+    security_zone: "testing"
+
+# Comprehensive IoT infrastructure simulation
+vms:
+  # IoT Gateway and Hub
+  - name: "iot-gateway"
+    type: "iot_gateway"
+    network: "iot_devices"
+    ip: "10.0.1.1"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5920
+    packages:
+      - "mosquitto"        # MQTT broker
+      - "node-red"         # IoT flow programming
+      - "coap-server"      # CoAP protocol support
+      - "zigbee-stack"     # Zigbee protocol
+      - "bluetooth-tools"  # Bluetooth LE support
+      - "openwrt"          # IoT gateway OS
+    services:
+      - "mosquitto"
+      - "node-red"
+      - "coap-server"
+      - "zigbee-coordinator"
+    configuration:
+      protocols: ["mqtt", "coap", "zigbee", "bluetooth", "wifi"]
+      authentication: "weak"
+      encryption: "optional"
+      firmware_updates: "insecure"
+    vulnerabilities:
+      - "default_credentials"
+      - "weak_mqtt_authentication"
+      - "insecure_firmware_updates"
+      - "protocol_vulnerabilities"
+    description: "Central IoT gateway managing multiple protocols and devices"
+
+  # Smart Home Devices
+  - name: "smart-thermostat"
+    type: "iot_device"
+    network: "iot_devices"
+    ip: "10.0.1.10"
+    memory: 256
+    disk: "2GB"
+    vnc_port: 5921
+    packages:
+      - "mqtt-client"
+      - "http-server"
+      - "temperature-sensor-sim"
+    services:
+      - "http-server"
+      - "mqtt-client"
+    device_profile:
+      manufacturer: "VulnTech"
+      model: "SmartTherm-2000"
+      firmware_version: "1.2.3"
+      protocols: ["http", "mqtt"]
+      interfaces: ["wifi", "ethernet"]
+    vulnerabilities:
+      - "hardcoded_credentials"
+      - "command_injection"
+      - "insecure_web_interface"
+      - "unencrypted_communications"
+      - "firmware_extraction_possible"
+    configuration:
+      web_interface: true
+      default_password: "admin123"
+      update_mechanism: "http_plain_text"
+    description: "Smart thermostat with multiple vulnerabilities"
+
+  - name: "smart-camera"
+    type: "iot_device"
+    network: "iot_devices"
+    ip: "10.0.1.20"
+    memory: 512
+    disk: "4GB"
+    vnc_port: 5922
+    packages:
+      - "mjpg-streamer"
+      - "rtsp-server"
+      - "onvif-server"
+      - "motion-detection"
+    services:
+      - "mjpg-streamer"
+      - "rtsp-server"
+      - "onvif-server"
+    device_profile:
+      manufacturer: "SecureCam Inc"
+      model: "EyeSpy-4K"
+      firmware_version: "2.1.5"
+      protocols: ["http", "rtsp", "onvif"]
+      interfaces: ["wifi", "ethernet"]
+    vulnerabilities:
+      - "rtsp_authentication_bypass"
+      - "directory_traversal"
+      - "command_injection_via_cgi"
+      - "weak_wifi_encryption"
+      - "privilege_escalation"
+    configuration:
+      streaming_enabled: true
+      authentication: "basic"
+      encryption: false
+      cloud_upload: true
+    description: "IP security camera with streaming vulnerabilities"
+
+  - name: "smart-doorbell"
+    type: "iot_device"
+    network: "iot_devices"
+    ip: "10.0.1.30"
+    memory: 256
+    disk: "2GB"
+    vnc_port: 5923
+    packages:
+      - "sip-client"
+      - "video-encoder"
+      - "motion-sensor"
+      - "cloud-client"
+    services:
+      - "sip-client"
+      - "http-server"
+    device_profile:
+      manufacturer: "SmartDoor"
+      model: "RingLike-Pro"
+      firmware_version: "3.0.1"
+      protocols: ["sip", "http", "websocket"]
+      interfaces: ["wifi"]
+    vulnerabilities:
+      - "sip_injection"
+      - "buffer_overflow"
+      - "insecure_cloud_api"
+      - "replay_attacks"
+    configuration:
+      cloud_integration: true
+      local_storage: true
+      encryption: "weak_wep"
+    description: "Smart doorbell with cloud integration vulnerabilities"
+
+  - name: "smart-lock"
+    type: "iot_device"
+    network: "iot_devices"
+    ip: "10.0.1.40"
+    memory: 128
+    disk: "1GB"
+    vnc_port: 5924
+    packages:
+      - "bluetooth-server"
+      - "nfc-tools"
+      - "lock-controller"
+    services:
+      - "bluetooth-server"
+      - "lock-service"
+    device_profile:
+      manufacturer: "SecureLock"
+      model: "BlueKey-Smart"
+      firmware_version: "1.8.2"
+      protocols: ["bluetooth", "nfc"]
+      interfaces: ["bluetooth_le", "nfc"]
+    vulnerabilities:
+      - "bluetooth_pairing_bypass"
+      - "nfc_relay_attacks"
+      - "pin_brute_force"
+      - "physical_bypass"
+    configuration:
+      pairing_mode: "insecure"
+      pin_complexity: "low"
+      tamper_detection: false
+    description: "Smart lock with Bluetooth and NFC vulnerabilities"
+
+  # Industrial IoT Devices
+  - name: "industrial-sensor"
+    type: "iot_device"
+    network: "iot_devices"
+    ip: "10.0.1.50"
+    memory: 256
+    disk: "2GB"
+    vnc_port: 5925
+    packages:
+      - "modbus-server"
+      - "scada-client"
+      - "sensor-simulator"
+    services:
+      - "modbus-server"
+      - "scada-client"
+    device_profile:
+      manufacturer: "IndustroTech"
+      model: "SensorPro-X100"
+      firmware_version: "4.2.1"
+      protocols: ["modbus", "dnp3", "bacnet"]
+      interfaces: ["ethernet", "serial"]
+    vulnerabilities:
+      - "modbus_authentication_bypass"
+      - "scada_protocol_vulnerabilities"
+      - "insecure_serial_communication"
+      - "firmware_backdoors"
+    configuration:
+      industrial_protocols: true
+      safety_systems: false
+      remote_access: true
+    description: "Industrial IoT sensor with SCADA vulnerabilities"
+
+  - name: "plc-simulator"
+    type: "iot_device"
+    network: "iot_devices"
+    ip: "10.0.1.60"
+    memory: 512
+    disk: "3GB"
+    vnc_port: 5926
+    packages:
+      - "openplc"
+      - "modbus-server"
+      - "ethernet-ip"
+      - "ladder-logic"
+    services:
+      - "openplc"
+      - "modbus-server"
+    device_profile:
+      manufacturer: "AutoControl"
+      model: "PLC-5000"
+      firmware_version: "5.1.0"
+      protocols: ["modbus", "ethernet_ip", "profinet"]
+      interfaces: ["ethernet"]
+    vulnerabilities:
+      - "ladder_logic_injection"
+      - "memory_corruption"
+      - "authentication_bypass"
+      - "firmware_manipulation"
+    configuration:
+      programming_interface: "unprotected"
+      safety_interlocks: "bypassable"
+      logging: "disabled"
+    description: "Programmable Logic Controller with industrial vulnerabilities"
+
+  # IoT Management and Cloud Services
+  - name: "iot-cloud-server"
+    type: "server"
+    network: "iot_management"
+    ip: "10.0.10.10"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5927
+    packages:
+      - "nodejs"
+      - "mongodb"
+      - "mqtt-broker"
+      - "rest-api"
+      - "websocket-server"
+    services:
+      - "nodejs"
+      - "mongodb"
+      - "mqtt-broker"
+    configuration:
+      api_authentication: "weak"
+      database_security: "minimal"
+      device_management: true
+      over_the_air_updates: "insecure"
+    vulnerabilities:
+      - "api_authentication_bypass"
+      - "nosql_injection"
+      - "insecure_direct_object_references"
+      - "mass_device_compromise"
+    description: "IoT cloud management platform with API vulnerabilities"
+
+  - name: "device-provisioning-server"
+    type: "server"
+    network: "iot_management"
+    ip: "10.0.10.20"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5928
+    packages:
+      - "certificate-authority"
+      - "device-identity-service"
+      - "provisioning-tools"
+    services:
+      - "ca-server"
+      - "provisioning-service"
+    vulnerabilities:
+      - "weak_certificate_validation"
+      - "device_identity_spoofing"
+      - "provisioning_replay_attacks"
+    description: "Device provisioning service with PKI vulnerabilities"
+
+  # Security Testing Infrastructure
+  - name: "iot-security-scanner"
+    type: "security"
+    network: "security_testing"
+    ip: "172.16.1.10"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5929
+    packages:
+      - "nmap"
+      - "iot-scanner"
+      - "firmware-analyzer"
+      - "protocol-fuzzer"
+      - "radio-tools"
+      - "uart-tools"
+      - "jtag-tools"
+    services:
+      - "sshd"
+    configuration:
+      hardware_tools: true
+      protocol_analysis: true
+      firmware_analysis: true
+      radio_analysis: true
+    description: "Specialized IoT security testing platform"
+
+  - name: "network-analyzer"
+    type: "security"
+    network: "security_testing"
+    ip: "172.16.1.20"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5930
+    packages:
+      - "wireshark"
+      - "tcpdump"
+      - "ettercap"
+      - "mitm-proxy"
+      - "radio-analyzer"
+    services:
+      - "sshd"
+    configuration:
+      packet_capture: true
+      protocol_analysis: true
+      wireless_analysis: true
+      mitm_capabilities: true
+    description: "Network traffic analysis and interception platform"
+
+  # Corporate Network Integration
+  - name: "corporate-workstation"
+    type: "workstation"
+    network: "corporate_network"
+    ip: "192.168.100.100"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5931
+    packages:
+      - "firefox"
+      - "mobile-app-simulator"
+      - "iot-management-apps"
+    services:
+      - "sshd"
+    configuration:
+      iot_applications: true
+      mobile_simulation: true
+      user_behavior: "typical"
+    description: "Corporate user workstation with IoT applications"
+
+# IoT-specific security testing scenarios
+security_scenarios:
+  - name: "Device Discovery and Enumeration"
+    description: "Discover and fingerprint IoT devices on the network"
+    difficulty: "beginner"
+    estimated_time: "60 minutes"
+    objectives:
+      - "Discover all IoT devices using network scanning"
+      - "Identify device types and manufacturers"
+      - "Enumerate services and open ports"
+      - "Fingerprint firmware versions"
+      - "Map device communication patterns"
+    tools: ["nmap", "masscan", "shodan", "censys"]
+    techniques:
+      - "port_scanning"
+      - "service_detection"
+      - "banner_grabbing"
+      - "protocol_identification"
+    success_criteria:
+      - "All IoT devices identified"
+      - "Device inventory created"
+      - "Communication flows mapped"
+    
+  - name: "Firmware Analysis"
+    description: "Extract and analyze IoT device firmware"
+    difficulty: "intermediate"
+    estimated_time: "120 minutes"
+    objectives:
+      - "Extract firmware from devices"
+      - "Analyze filesystem structure"
+      - "Identify hardcoded credentials"
+      - "Find vulnerable services"
+      - "Discover backdoors or hidden functionality"
+    tools: ["binwalk", "firmware-mod-kit", "radare2", "ghidra"]
+    techniques:
+      - "firmware_extraction"
+      - "filesystem_analysis"
+      - "binary_analysis"
+      - "reverse_engineering"
+    success_criteria:
+      - "Firmware successfully extracted"
+      - "Vulnerabilities identified"
+      - "Credentials recovered"
+    
+  - name: "Protocol Security Testing"
+    description: "Test security of IoT communication protocols"
+    difficulty: "intermediate"
+    estimated_time: "90 minutes"
+    objectives:
+      - "Analyze MQTT security configuration"
+      - "Test CoAP implementation vulnerabilities"
+      - "Evaluate Zigbee security"
+      - "Assess Bluetooth Low Energy security"
+      - "Test proprietary protocol implementations"
+    tools: ["mosquitto-clients", "coap-cli", "zigbee-tools", "ubertooth"]
+    techniques:
+      - "protocol_fuzzing"
+      - "authentication_testing"
+      - "encryption_analysis"
+      - "replay_attacks"
+    success_criteria:
+      - "Protocol vulnerabilities identified"
+      - "Authentication bypassed"
+      - "Communications intercepted"
+    
+  - name: "Web Interface Security Assessment"
+    description: "Test security of IoT device web interfaces"
+    difficulty: "beginner"
+    estimated_time: "90 minutes"
+    objectives:
+      - "Test authentication mechanisms"
+      - "Identify injection vulnerabilities"
+      - "Test session management"
+      - "Evaluate access controls"
+      - "Test firmware update mechanisms"
+    tools: ["burpsuite", "sqlmap", "nikto", "dirb"]
+    techniques:
+      - "web_application_testing"
+      - "authentication_bypass"
+      - "command_injection"
+      - "file_inclusion"
+    success_criteria:
+      - "Web interface compromised"
+      - "Administrative access gained"
+      - "Device control achieved"
+    
+  - name: "Radio Frequency (RF) Security Analysis"
+    description: "Analyze wireless communications and RF vulnerabilities"
+    difficulty: "advanced"
+    estimated_time: "150 minutes"
+    objectives:
+      - "Capture and analyze wireless traffic"
+      - "Test wireless encryption implementations"
+      - "Perform RF replay attacks"
+      - "Test for signal jamming vulnerabilities"
+      - "Analyze proprietary RF protocols"
+    tools: ["hackrf", "rtl-sdr", "gqrx", "gnu-radio"]
+    techniques:
+      - "rf_analysis"
+      - "signal_interception"
+      - "replay_attacks"
+      - "jamming_attacks"
+    success_criteria:
+      - "Wireless traffic captured"
+      - "Encryption bypassed"
+      - "RF attacks successful"
+    
+  - name: "Cloud API Security Testing"
+    description: "Test security of IoT cloud services and APIs"
+    difficulty: "intermediate"
+    estimated_time: "100 minutes"
+    objectives:
+      - "Test API authentication and authorization"
+      - "Identify injection vulnerabilities"
+      - "Test device management functions"
+      - "Evaluate data privacy controls"
+      - "Test over-the-air update security"
+    tools: ["postman", "burpsuite", "sqlmap", "custom-scripts"]
+    techniques:
+      - "api_testing"
+      - "authentication_bypass"
+      - "injection_testing"
+      - "privilege_escalation"
+    success_criteria:
+      - "API vulnerabilities exploited"
+      - "Unauthorized device access"
+      - "Data exfiltration successful"
+    
+  - name: "Physical Security Assessment"
+    description: "Test physical security of IoT devices"
+    difficulty: "advanced"
+    estimated_time: "120 minutes"
+    objectives:
+      - "Test UART/JTAG interface security"
+      - "Attempt firmware extraction via hardware"
+      - "Test physical tamper protections"
+      - "Evaluate secure boot implementations"
+      - "Test hardware debug interfaces"
+    tools: ["multimeter", "logic-analyzer", "uart-adapter", "jtag-debugger"]
+    techniques:
+      - "hardware_hacking"
+      - "uart_access"
+      - "jtag_debugging"
+      - "chip_dumping"
+    success_criteria:
+      - "Hardware interfaces accessed"
+      - "Firmware extracted"
+      - "Debug access gained"
+
+# IoT attack vectors and techniques
+attack_vectors:
+  authentication:
+    - "default_credentials"
+    - "weak_password_policies"
+    - "authentication_bypass"
+    - "session_hijacking"
+    
+  communication:
+    - "man_in_the_middle"
+    - "replay_attacks"
+    - "protocol_downgrade"
+    - "traffic_analysis"
+    
+  firmware:
+    - "firmware_manipulation"
+    - "bootloader_exploitation"
+    - "update_mechanism_abuse"
+    - "backdoor_insertion"
+    
+  physical:
+    - "uart_console_access"
+    - "jtag_debugging"
+    - "side_channel_attacks"
+    - "fault_injection"
+    
+  cloud_services:
+    - "api_abuse"
+    - "cloud_misconfiguration"
+    - "data_exposure"
+    - "privilege_escalation"
+
+# IoT security testing tools and techniques
+testing_tools:
+  network_analysis:
+    - tool: "nmap"
+      purpose: "Network discovery and port scanning"
+      iot_specific: "Device fingerprinting"
+    - tool: "masscan"
+      purpose: "High-speed port scanning"
+      iot_specific: "Large IoT network scanning"
+    - tool: "iot-scanner"
+      purpose: "Specialized IoT device discovery"
+      iot_specific: "Protocol-aware device detection"
+      
+  firmware_analysis:
+    - tool: "binwalk"
+      purpose: "Firmware analysis and extraction"
+      iot_specific: "IoT firmware unpacking"
+    - tool: "firmware-mod-kit"
+      purpose: "Firmware modification toolkit"
+      iot_specific: "IoT firmware manipulation"
+    - tool: "radare2"
+      purpose: "Reverse engineering framework"
+      iot_specific: "IoT binary analysis"
+      
+  protocol_testing:
+    - tool: "mosquitto-clients"
+      purpose: "MQTT protocol testing"
+      iot_specific: "MQTT security assessment"
+    - tool: "coap-cli"
+      purpose: "CoAP protocol testing"
+      iot_specific: "CoAP implementation testing"
+    - tool: "scapy"
+      purpose: "Packet manipulation"
+      iot_specific: "IoT protocol fuzzing"
+      
+  radio_frequency:
+    - tool: "hackrf"
+      purpose: "Software defined radio"
+      iot_specific: "IoT RF protocol analysis"
+    - tool: "rtl-sdr"
+      purpose: "Receive-only SDR"
+      iot_specific: "Wireless IoT monitoring"
+    - tool: "ubertooth"
+      purpose: "Bluetooth analysis"
+      iot_specific: "IoT Bluetooth security testing"
+      
+  hardware_hacking:
+    - tool: "uart-adapter"
+      purpose: "Serial communication access"
+      iot_specific: "IoT device console access"
+    - tool: "logic-analyzer"
+      purpose: "Digital signal analysis"
+      iot_specific: "IoT communication analysis"
+    - tool: "jtag-debugger"
+      purpose: "Hardware debugging interface"
+      iot_specific: "IoT firmware extraction"
+
+# Security assessment checklist
+security_checklist:
+  device_security:
+    - "Default credentials changed"
+    - "Strong authentication implemented"
+    - "Encryption properly configured"
+    - "Firmware update mechanism secured"
+    - "Physical tamper protection present"
+    
+  communication_security:
+    - "Encrypted communication channels"
+    - "Certificate validation implemented"
+    - "Replay attack protection"
+    - "Protocol downgrade protection"
+    - "Traffic analysis resistance"
+    
+  cloud_integration:
+    - "API authentication and authorization"
+    - "Data encryption in transit and at rest"
+    - "Device identity management"
+    - "Secure provisioning process"
+    - "Privacy controls implemented"
+    
+  network_security:
+    - "Network segmentation implemented"
+    - "Device access controls configured"
+    - "Monitoring and logging enabled"
+    - "Anomaly detection in place"
+    - "Incident response procedures defined"
+
+# Compliance and standards
+compliance_frameworks:
+  - name: "NIST Cybersecurity Framework"
+    categories: ["identify", "protect", "detect", "respond", "recover"]
+    iot_focus: "IoT risk management"
+    
+  - name: "OWASP IoT Top 10"
+    vulnerabilities:
+      - "Weak, Guessable, or Hardcoded Passwords"
+      - "Insecure Network Services"
+      - "Insecure Ecosystem Interfaces"
+      - "Lack of Secure Update Mechanism"
+      - "Use of Insecure or Outdated Components"
+      - "Insufficient Privacy Protection"
+      - "Insecure Data Transfer and Storage"
+      - "Lack of Device Management"
+      - "Insecure Default Settings"
+      - "Lack of Physical Hardening"
+      
+  - name: "ISO/IEC 27001"
+    focus: "Information security management"
+    iot_application: "IoT security governance"
+    
+  - name: "IEC 62443"
+    focus: "Industrial cybersecurity"
+    iot_application: "Industrial IoT security"
+
+# Learning outcomes
+learning_outcomes:
+  - "Understand IoT security landscape and threat models"
+  - "Master IoT device discovery and enumeration techniques"
+  - "Learn firmware analysis and reverse engineering"
+  - "Develop IoT protocol security testing skills"
+  - "Practice hardware hacking techniques"
+  - "Understand IoT cloud security implications"
+  - "Learn to assess industrial IoT systems"
+  - "Develop IoT security assessment methodology"
+
+# Prerequisites and target audience
+prerequisites:
+  - "Network security fundamentals"
+  - "Basic understanding of embedded systems"
+  - "Familiarity with common IoT protocols"
+  - "Basic reverse engineering knowledge"
+  - "Hardware troubleshooting experience (preferred)"
+
+target_audience:
+  - "IoT security researchers"
+  - "Penetration testers"
+  - "Security consultants"
+  - "IoT developers"
+  - "Product security teams"
+  - "Industrial control system security professionals"
+
+# Resource requirements and deployment notes
+deployment_notes:
+  estimated_deployment_time: "15-20 minutes"
+  suitable_for: ["intermediate", "advanced"]
+  concurrent_users: "5-8"
+  special_requirements:
+    - "USB ports for hardware tools (optional)"
+    - "Software-defined radio dongles (for RF scenarios)"
+    - "Logic analyzer and multimeter (for hardware scenarios)"
+    
+performance_considerations:
+  - "Multiple small VMs simulate resource-constrained IoT devices"
+  - "Network simulation may require additional bandwidth"
+  - "Hardware scenarios require physical equipment"
+  - "RF analysis requires specialized software and drivers"

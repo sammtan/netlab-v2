@@ -1,0 +1,619 @@
+name: penetration-testing-lab
+description: Comprehensive ethical hacking and penetration testing environment
+version: "2.0"
+
+# Resource allocation for full pentest lab
+constraints:
+  max_ram: 14336    # 14GB RAM
+  max_disk: 65000   # 65GB disk
+  max_cpu: 10       # 10 CPU cores
+
+# Network segmentation for realistic pentest scenarios
+networks:
+  attacker:
+    subnet: "10.0.0.0/24"
+    gateway: "10.0.0.1"
+    purpose: "Attacker tools and command & control"
+    security_zone: "external"
+    
+  target_dmz:
+    subnet: "192.168.10.0/24"
+    gateway: "192.168.10.1"
+    purpose: "Target DMZ with public services"
+    security_zone: "dmz"
+    
+  target_internal:
+    subnet: "192.168.20.0/24"
+    gateway: "192.168.20.1"
+    purpose: "Target internal corporate network"
+    security_zone: "internal"
+    
+  target_critical:
+    subnet: "192.168.30.0/24"
+    gateway: "192.168.30.1"
+    purpose: "Critical systems and databases"
+    security_zone: "restricted"
+
+# Comprehensive VM infrastructure for pentest training
+vms:
+  # Attacker Infrastructure
+  - name: "kali-primary"
+    type: "security"
+    network: "attacker"
+    ip: "10.0.0.10"
+    memory: 4096
+    disk: "15GB"
+    vnc_port: 5920
+    packages:
+      - "kali-linux-everything"
+      - "metasploit-framework"
+      - "burpsuite"
+      - "nmap"
+      - "sqlmap"
+      - "hashcat"
+      - "john"
+      - "gobuster"
+      - "nikto"
+      - "wireshark"
+      - "responder"
+      - "impacket"
+      - "bloodhound"
+      - "crackmapexec"
+      - "empire"
+      - "covenant"
+    services:
+      - "sshd"
+      - "postgresql"  # For Metasploit
+    configuration:
+      desktop_environment: "gnome"
+      pentest_tools: "comprehensive"
+      custom_wordlists: true
+    description: "Primary Kali Linux attack platform with full toolset"
+
+  - name: "command-control"
+    type: "server"
+    network: "attacker"
+    ip: "10.0.0.20"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5921
+    packages:
+      - "cobalt-strike"
+      - "empire"
+      - "sliver"
+      - "metasploit-framework"
+      - "nginx"
+      - "python3"
+    services:
+      - "nginx"
+      - "sshd"
+    configuration:
+      c2_frameworks: ["cobalt-strike", "empire", "sliver"]
+      payload_hosting: true
+      listener_management: true
+    description: "Command and control server for advanced scenarios"
+
+  - name: "windows-attacker"
+    type: "workstation"
+    network: "attacker"
+    ip: "10.0.0.30"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5922
+    packages:
+      - "powershell-empire"
+      - "cobalt-strike-client"
+      - "bloodhound"
+      - "sharphound"
+      - "rubeus"
+      - "mimikatz"
+    services:
+      - "sshd"
+    configuration:
+      os_type: "windows_simulation"
+      ad_tools: true
+      post_exploitation_tools: true
+    description: "Windows-focused attack platform for AD scenarios"
+
+  # Target DMZ Systems (Vulnerable)
+  - name: "web-app-vulnerable"
+    type: "server"
+    network: "target_dmz"
+    ip: "192.168.10.10"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5923
+    packages:
+      - "apache2"
+      - "php"
+      - "mysql-server"
+      - "dvwa"
+      - "webgoat"
+      - "mutillidae"
+    services:
+      - "apache2"
+      - "mysql"
+    vulnerabilities:
+      - "sql_injection"
+      - "xss_stored"
+      - "xss_reflected"
+      - "csrf"
+      - "lfi_rfi"
+      - "command_injection"
+      - "weak_session_management"
+      - "insecure_direct_object_references"
+    configuration:
+      security_level: "low"
+      error_reporting: "verbose"
+      input_validation: "disabled"
+    description: "Intentionally vulnerable web applications (DVWA, WebGoat, Mutillidae)"
+
+  - name: "ftp-server-old"
+    type: "server"
+    network: "target_dmz"
+    ip: "192.168.10.20"
+    memory: 512
+    disk: "4GB"
+    vnc_port: 5924
+    packages:
+      - "vsftpd-2.3.4"  # Backdoor version
+      - "proftpd-1.3.3c"  # Vulnerable version
+    services:
+      - "vsftpd"
+      - "proftpd"
+    vulnerabilities:
+      - "vsftpd_234_backdoor"
+      - "proftpd_133c_backdoor"
+      - "anonymous_access"
+      - "weak_credentials"
+    configuration:
+      anonymous_access: true
+      weak_passwords: ["admin:admin", "ftp:ftp"]
+    description: "Vulnerable FTP servers with known exploits"
+
+  - name: "smtp-server-open"
+    type: "server"
+    network: "target_dmz"
+    ip: "192.168.10.30"
+    memory: 768
+    disk: "4GB"
+    vnc_port: 5925
+    packages:
+      - "postfix"
+      - "dovecot"
+      - "squirrelmail"
+    services:
+      - "postfix"
+      - "dovecot"
+      - "apache2"
+    vulnerabilities:
+      - "open_relay"
+      - "weak_authentication"
+      - "information_disclosure"
+      - "squirrelmail_rce"
+    configuration:
+      open_relay: true
+      weak_passwords: true
+      verbose_errors: true
+    description: "Mail server with configuration vulnerabilities"
+
+  # Target Internal Network (Realistic Corporate Environment)
+  - name: "windows-dc"
+    type: "server"
+    network: "target_internal"
+    ip: "192.168.20.10"
+    memory: 2048
+    disk: "12GB"
+    vnc_port: 5926
+    packages:
+      - "samba-ad-dc"
+      - "bind9"
+      - "ntp"
+    services:
+      - "samba-ad-dc"
+      - "bind9"
+      - "ntp"
+    vulnerabilities:
+      - "ms17_010_eternablue"
+      - "weak_domain_policies"
+      - "privileged_users_in_domain_admins"
+      - "kerberoasting_vulnerable_spns"
+      - "asreproasting_no_preauth"
+    configuration:
+      domain: "vulnerable.local"
+      password_policy: "weak"
+      privileged_accounts: "excessive"
+      service_accounts: "weak_passwords"
+    description: "Windows Domain Controller with AD vulnerabilities"
+
+  - name: "windows-workstation-1"
+    type: "workstation"
+    network: "target_internal"
+    ip: "192.168.20.100"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5927
+    packages:
+      - "office-suite"
+      - "adobe-reader-old"
+      - "java-old"
+    services:
+      - "sshd"
+    vulnerabilities:
+      - "unpatched_os"
+      - "vulnerable_software"
+      - "weak_local_admin"
+      - "stored_credentials"
+      - "autologon_configured"
+    configuration:
+      os_patches: "missing_critical"
+      software_versions: "outdated"
+      local_admin: "enabled"
+      credential_storage: "insecure"
+    description: "Unpatched Windows workstation with multiple vulnerabilities"
+
+  - name: "windows-workstation-2"
+    type: "workstation"
+    network: "target_internal"
+    ip: "192.168.20.101"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5928
+    packages:
+      - "office-suite"
+      - "firefox"
+      - "chrome"
+    services:
+      - "sshd"
+    vulnerabilities:
+      - "cached_credentials"
+      - "rdp_enabled"
+      - "shared_folders"
+      - "weak_firewall"
+    configuration:
+      credential_caching: "enabled"
+      rdp_access: "enabled"
+      network_shares: "world_readable"
+    description: "Domain-joined workstation with lateral movement opportunities"
+
+  - name: "linux-server-internal"
+    type: "server"
+    network: "target_internal"
+    ip: "192.168.20.50"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5929
+    packages:
+      - "apache2"
+      - "ssh-server"
+      - "nfs-server"
+      - "samba"
+    services:
+      - "apache2"
+      - "sshd"
+      - "nfs-server"
+      - "smbd"
+    vulnerabilities:
+      - "kernel_privilege_escalation"
+      - "weak_ssh_keys"
+      - "world_writable_nfs"
+      - "suid_binaries"
+      - "cron_job_hijacking"
+    configuration:
+      kernel_version: "old"
+      ssh_keys: "weak"
+      file_permissions: "loose"
+      scheduled_tasks: "vulnerable"
+    description: "Linux server with privilege escalation opportunities"
+
+  # Target Critical Systems
+  - name: "database-server-critical"
+    type: "database"
+    network: "target_critical"
+    ip: "192.168.30.10"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5930
+    packages:
+      - "mysql-server"
+      - "postgresql"
+      - "mongodb"
+    services:
+      - "mysql"
+      - "postgresql"
+      - "mongodb"
+    vulnerabilities:
+      - "default_credentials"
+      - "remote_access_enabled"
+      - "no_encryption"
+      - "sql_injection_backend"
+      - "privilege_escalation_via_udf"
+    configuration:
+      default_passwords: true
+      remote_access: "0.0.0.0"
+      encryption: false
+      auditing: false
+    description: "Database server with multiple database platforms and vulnerabilities"
+
+  - name: "backup-server"
+    type: "server"
+    network: "target_critical"
+    ip: "192.168.30.20"
+    memory: 1024
+    disk: "8GB"
+    vnc_port: 5931
+    packages:
+      - "bacula"
+      - "rsync"
+      - "tar"
+    services:
+      - "bacula-director"
+      - "rsync"
+      - "sshd"
+    vulnerabilities:
+      - "weak_backup_encryption"
+      - "accessible_backup_files"
+      - "rsync_misconfiguration"
+      - "ssh_key_authentication_bypass"
+    configuration:
+      encryption: "weak"
+      file_permissions: "world_readable"
+      authentication: "weak"
+    description: "Backup server with data exposure vulnerabilities"
+
+# Penetration testing scenarios and methodologies
+pentest_scenarios:
+  - name: "External Network Penetration Test"
+    description: "Black-box external penetration test"
+    difficulty: "beginner"
+    estimated_time: "4 hours"
+    methodology: "OWASP_Testing_Guide"
+    scope: ["target_dmz"]
+    objectives:
+      - "Reconnaissance and information gathering"
+      - "Vulnerability scanning and enumeration"
+      - "Exploitation of identified vulnerabilities"
+      - "Post-exploitation and privilege escalation"
+      - "Documentation and reporting"
+    phases:
+      - phase: "reconnaissance"
+        tasks: ["port_scanning", "service_enumeration", "web_application_discovery"]
+        tools: ["nmap", "gobuster", "nikto"]
+      - phase: "vulnerability_assessment"
+        tasks: ["vulnerability_scanning", "manual_testing", "exploit_research"]
+        tools: ["nessus", "burpsuite", "searchsploit"]
+      - phase: "exploitation"
+        tasks: ["exploit_execution", "shell_access", "privilege_escalation"]
+        tools: ["metasploit", "custom_exploits", "local_exploit_suggester"]
+      - phase: "post_exploitation"
+        tasks: ["system_enumeration", "credential_harvesting", "persistence"]
+        tools: ["linpeas", "winpeas", "mimikatz"]
+    success_criteria:
+      - "Administrative access to at least 2 DMZ systems"
+      - "Credential harvesting from compromised systems"
+      - "Complete documentation of attack path"
+    
+  - name: "Internal Network Penetration Test"
+    description: "Assume breach internal network assessment"
+    difficulty: "intermediate"
+    estimated_time: "6 hours"
+    methodology: "PTES"
+    scope: ["target_internal", "target_critical"]
+    objectives:
+      - "Active Directory enumeration and attacks"
+      - "Lateral movement between systems"
+      - "Privilege escalation to Domain Admin"
+      - "Critical data access and exfiltration"
+      - "Persistence mechanism deployment"
+    phases:
+      - phase: "local_enumeration"
+        tasks: ["ad_enumeration", "network_discovery", "credential_hunting"]
+        tools: ["bloodhound", "powerview", "mimikatz"]
+      - phase: "lateral_movement"
+        tasks: ["credential_relay", "pass_the_hash", "service_exploitation"]
+        tools: ["crackmapexec", "impacket", "responder"]
+      - phase: "privilege_escalation"
+        tasks: ["domain_privilege_escalation", "persistence", "golden_ticket"]
+        tools: ["powersploit", "empire", "mimikatz"]
+      - phase: "data_access"
+        tasks: ["database_access", "file_server_enumeration", "sensitive_data_location"]
+        tools: ["sqlcmd", "smbclient", "custom_scripts"]
+    success_criteria:
+      - "Domain Administrator privileges achieved"
+      - "Access to critical database systems"
+      - "Sensitive data identified and accessed"
+    
+  - name: "Web Application Security Assessment"
+    description: "Comprehensive web application security testing"
+    difficulty: "beginner"
+    estimated_time: "3 hours"
+    methodology: "OWASP_WSTG"
+    scope: ["web-app-vulnerable"]
+    objectives:
+      - "Authentication and session management testing"
+      - "Input validation testing"
+      - "Business logic testing"
+      - "Client-side security testing"
+    test_cases:
+      - category: "input_validation"
+        tests: ["sql_injection", "xss", "command_injection", "file_inclusion"]
+      - category: "authentication"
+        tests: ["brute_force", "session_management", "password_policy"]
+      - category: "authorization"
+        tests: ["privilege_escalation", "idor", "forced_browsing"]
+      - category: "session_management"
+        tests: ["session_fixation", "session_hijacking", "logout_functionality"]
+    success_criteria:
+      - "Complete OWASP Top 10 vulnerability assessment"
+      - "Successful exploitation of critical vulnerabilities"
+      - "Administrative access to web application"
+    
+  - name: "Advanced Persistent Threat (APT) Simulation"
+    description: "Sophisticated multi-stage attack simulation"
+    difficulty: "advanced"
+    estimated_time: "8 hours"
+    methodology: "MITRE_ATT&CK"
+    scope: ["all_networks"]
+    objectives:
+      - "Initial access through spear phishing"
+      - "Command and control establishment"
+      - "Lateral movement and persistence"
+      - "Data collection and exfiltration"
+      - "Anti-forensics and cleanup"
+    attack_phases:
+      - phase: "initial_access"
+        techniques: ["T1566.001", "T1190", "T1078"]
+        description: "Spear phishing and web application exploitation"
+      - phase: "execution"
+        techniques: ["T1059.001", "T1053", "T1547"]
+        description: "Command execution and persistence"
+      - phase: "persistence"
+        techniques: ["T1547.001", "T1136", "T1098"]
+        description: "Maintain long-term access"
+      - phase: "privilege_escalation"
+        techniques: ["T1068", "T1078.002", "T1134"]
+        description: "Escalate privileges on compromised systems"
+      - phase: "defense_evasion"
+        techniques: ["T1070", "T1036", "T1055"]
+        description: "Avoid detection by security controls"
+      - phase: "credential_access"
+        techniques: ["T1003", "T1110", "T1558"]
+        description: "Harvest credentials from compromised systems"
+      - phase: "lateral_movement"
+        techniques: ["T1021", "T1550", "T1210"]
+        description: "Move through the network"
+      - phase: "collection"
+        techniques: ["T1005", "T1039", "T1114"]
+        description: "Collect sensitive information"
+      - phase: "exfiltration"
+        techniques: ["T1041", "T1048", "T1567"]
+        description: "Exfiltrate collected data"
+    success_criteria:
+      - "Persistent access maintained for 24+ hours"
+      - "Multiple systems compromised across all network segments"
+      - "Sensitive data successfully exfiltrated"
+      - "Minimal detection by monitoring systems"
+
+# Vulnerability catalog for training
+vulnerability_catalog:
+  web_application:
+    - name: "SQL Injection"
+      cve: ["CVE-2021-44228", "CVE-2020-1938"]
+      difficulty: "beginner"
+      impact: "high"
+      tools: ["sqlmap", "burpsuite", "manual"]
+      
+    - name: "Cross-Site Scripting (XSS)"
+      types: ["reflected", "stored", "dom"]
+      difficulty: "beginner"
+      impact: "medium"
+      tools: ["burpsuite", "xsser", "manual"]
+      
+    - name: "Remote Code Execution"
+      cve: ["CVE-2021-44228", "CVE-2020-1472"]
+      difficulty: "intermediate"
+      impact: "critical"
+      tools: ["metasploit", "custom_exploits"]
+  
+  network_services:
+    - name: "SMB Vulnerabilities"
+      cve: ["CVE-2017-0144", "CVE-2020-1472"]
+      protocols: ["smb", "netbios"]
+      difficulty: "beginner"
+      impact: "critical"
+      tools: ["metasploit", "impacket", "crackmapexec"]
+      
+    - name: "SSH Weak Configuration"
+      types: ["weak_keys", "password_authentication", "root_login"]
+      difficulty: "beginner"
+      impact: "high"
+      tools: ["hydra", "medusa", "custom_scripts"]
+
+# Assessment and scoring
+assessment:
+  - category: "Reconnaissance"
+    weight: 15
+    tasks: ["network_discovery", "service_enumeration", "vulnerability_identification"]
+    
+  - category: "Exploitation"
+    weight: 25
+    tasks: ["initial_access", "privilege_escalation", "lateral_movement"]
+    
+  - category: "Post-Exploitation"
+    weight: 20
+    tasks: ["credential_harvesting", "persistence", "data_access"]
+    
+  - category: "Reporting"
+    weight: 25
+    tasks: ["vulnerability_documentation", "risk_assessment", "remediation_recommendations"]
+    
+  - category: "Methodology"
+    weight: 15
+    tasks: ["systematic_approach", "tool_usage", "time_management"]
+
+# Required tools and their purposes
+required_tools:
+  reconnaissance:
+    - "nmap": "Network discovery and port scanning"
+    - "masscan": "High-speed port scanning"
+    - "gobuster": "Directory and DNS brute-forcing"
+    - "subfinder": "Subdomain enumeration"
+    
+  vulnerability_assessment:
+    - "nessus": "Comprehensive vulnerability scanning"
+    - "openvas": "Open-source vulnerability scanner"
+    - "nikto": "Web server vulnerability scanner"
+    - "burpsuite": "Web application security testing"
+    
+  exploitation:
+    - "metasploit": "Exploitation framework"
+    - "sqlmap": "SQL injection exploitation"
+    - "responder": "LLMNR/NBT-NS poisoning"
+    - "impacket": "Windows protocol exploitation"
+    
+  post_exploitation:
+    - "mimikatz": "Credential extraction"
+    - "bloodhound": "Active Directory enumeration"
+    - "empire": "Post-exploitation framework"
+    - "crackmapexec": "Network service enumeration"
+
+# Learning objectives and outcomes
+learning_outcomes:
+  - "Master systematic penetration testing methodology"
+  - "Develop web application security testing skills"
+  - "Learn Active Directory attack techniques"
+  - "Practice lateral movement and privilege escalation"
+  - "Understand post-exploitation and persistence"
+  - "Create comprehensive penetration test reports"
+  - "Apply MITRE ATT&CK framework in practice"
+
+# Target audience and prerequisites
+target_audience:
+  - "Aspiring penetration testers"
+  - "Cybersecurity professionals"
+  - "Red team operators"
+  - "Security consultants"
+  - "Ethical hackers"
+
+prerequisites:
+  - "Strong networking fundamentals"
+  - "Linux and Windows administration"
+  - "Web application architecture understanding"
+  - "Basic scripting knowledge (Python, PowerShell, Bash)"
+  - "Security concepts and terminology"
+
+# Compliance and ethical considerations
+ethical_guidelines:
+  - "Only test systems you own or have explicit permission to test"
+  - "Do not use these techniques against production systems"
+  - "Respect scope limitations and rules of engagement"
+  - "Practice responsible disclosure of vulnerabilities"
+  - "Maintain confidentiality of discovered information"
+  - "Follow local laws and regulations"
+
+certifications_supported:
+  - "CEH (Certified Ethical Hacker)"
+  - "OSCP (Offensive Security Certified Professional)"
+  - "PENTEST+ (CompTIA PenTest+)"
+  - "GCIH (GIAC Certified Incident Handler)"
+  - "GCPEN (GIAC Certified Penetration Tester)"

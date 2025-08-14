@@ -1,0 +1,182 @@
+# NetLab V2 - Open Devices Runtime Environment (ODRE)
+# Isolated environment for running deployed network devices
+
+version: '3.8'
+
+services:
+  netlab-odre:
+    build:
+      context: .
+      dockerfile: Dockerfile.runtime
+    container_name: netlab-odre
+    hostname: netlab-runtime
+    
+    # Override entrypoint to fix Windows compatibility
+    entrypoint: ["/bin/bash"]
+    command: ["-c", "sleep infinity"]
+    
+    # Enable nested virtualization and full system access
+    privileged: true
+    
+    # Volume mappings for device storage and state
+    volumes:
+      # Device images and VM storage
+      - odre_images:/netlab/images
+      - odre_deployed:/netlab/deployed
+      - odre_configs:/netlab/configs
+      - odre_logs:/netlab/logs
+      - odre_state:/netlab/state
+      
+      # Libvirt storage
+      - odre_libvirt:/var/lib/libvirt/images
+      
+      # Docker storage for containers  
+      - odre_docker:/var/lib/docker
+      
+      # System directories needed for full virtualization
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /dev:/dev
+    
+    # Network configuration for device connectivity
+    networks:
+      - netlab-runtime-network
+      - netlab-devices-network
+    
+    # Port mappings for device management interfaces
+    ports:
+      # Management interfaces
+      - "2000-2100:2000-2100"   # Device SSH/management
+      - "8000-8100:8000-8100"   # Web interfaces
+      - "9000-9100:9000-9100"   # Monitoring interfaces
+    
+    # Environment variables
+    environment:
+      - NETLAB_RUNTIME=odre
+      - NETLAB_HOME=/netlab
+      - LIBVIRT_DEFAULT_URI=qemu:///system
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    
+    # Resource limits (configurable based on host)
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'      # Generous for running multiple VMs
+          memory: 16G      # Generous for device VMs
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+    
+    # Security context
+    security_opt:
+      - apparmor:unconfined
+      - seccomp:unconfined
+    
+    # Required capabilities for full virtualization
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+      - SYS_MODULE
+      - SYS_RAWIO
+      - SYS_PTRACE
+      - DAC_READ_SEARCH
+    
+    # Device access for virtualization
+    devices:
+      - /dev/kvm:/dev/kvm
+      - /dev/net/tun:/dev/net/tun
+    
+    # Labels
+    labels:
+      netlab.component: "odre"
+      netlab.version: "2.0"
+      netlab.purpose: "device-runtime"
+
+  # Management interface for ODRE
+  netlab-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.runtime
+    container_name: netlab-manager
+    depends_on:
+      - netlab-odre
+    volumes:
+      - odre_state:/netlab/state:ro
+      - odre_logs:/netlab/logs:ro
+    command: >
+      sh -c "
+        echo 'NetLab Management Interface' &&
+        python3 -m http.server 9999 --directory /netlab/state
+      "
+    ports:
+      - "9999:9999"
+    networks:
+      - netlab-runtime-network
+    profiles:
+      - management
+
+  # Log aggregation service
+  netlab-logs:
+    image: alpine:latest
+    container_name: netlab-logs
+    volumes:
+      - odre_logs:/logs:ro
+    command: >
+      sh -c "
+        apk add --no-cache inotify-tools &&
+        echo 'Watching NetLab logs...' &&
+        tail -f /logs/*.log 2>/dev/null || sleep infinity
+      "
+    networks:
+      - netlab-runtime-network
+    profiles:
+      - logs
+
+# Networks for device isolation and management
+networks:
+  netlab-runtime-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
+          gateway: 172.31.0.1
+    driver_opts:
+      com.docker.network.bridge.name: netlab-mgmt
+  
+  netlab-devices-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+          gateway: 10.0.0.1
+    driver_opts:
+      com.docker.network.bridge.name: netlab-devices
+
+# Persistent volumes for device runtime
+volumes:
+  odre_images:
+    name: netlab_odre_images
+    driver: local
+    
+  odre_deployed:
+    name: netlab_odre_deployed
+    driver: local
+    
+  odre_configs:
+    name: netlab_odre_configs
+    driver: local
+    
+  odre_logs:
+    name: netlab_odre_logs
+    driver: local
+    
+  odre_state:
+    name: netlab_odre_state
+    driver: local
+    
+  odre_libvirt:
+    name: netlab_odre_libvirt
+    driver: local
+    
+  odre_docker:
+    name: netlab_odre_docker
+    driver: local

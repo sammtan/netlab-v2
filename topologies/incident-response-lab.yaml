@@ -1,0 +1,701 @@
+name: incident-response-lab
+description: Comprehensive incident response and digital forensics training environment
+version: "2.0"
+
+# Resource allocation for IR training scenarios
+constraints:
+  max_ram: 12288    # 12GB RAM
+  max_disk: 55000   # 55GB disk
+  max_cpu: 10       # 10 CPU cores
+
+# Network segmentation for incident response scenarios
+networks:
+  corporate:
+    subnet: "192.168.100.0/24"
+    gateway: "192.168.100.1"
+    purpose: "Corporate network with compromised systems"
+    security_zone: "internal"
+    
+  ir_tools:
+    subnet: "10.10.1.0/24"
+    gateway: "10.10.1.1"
+    purpose: "Incident response tools and forensics workstations"
+    security_zone: "investigation"
+    
+  quarantine:
+    subnet: "172.16.99.0/24"
+    gateway: "172.16.99.1"
+    purpose: "Isolated network for suspect systems"
+    security_zone: "quarantine"
+    
+  evidence_storage:
+    subnet: "10.20.1.0/24"
+    gateway: "10.20.1.1"
+    purpose: "Secure evidence storage and case management"
+    security_zone: "evidence"
+
+# Incident response infrastructure
+vms:
+  # Incident Response Command Center
+  - name: "ir-workstation-lead"
+    type: "security"
+    network: "ir_tools"
+    ip: "10.10.1.10"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5920
+    packages:
+      - "volatility3"
+      - "autopsy"
+      - "sleuthkit"
+      - "wireshark"
+      - "yara"
+      - "binwalk"
+      - "foremost"
+      - "photorec"
+      - "hashdeep"
+      - "timeline-explorer"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "gnome"
+      forensics_tools: "comprehensive"
+      case_management: true
+      evidence_chain_custody: true
+    description: "Lead incident responder workstation with full forensics suite"
+
+  - name: "ir-workstation-analyst1"
+    type: "security"
+    network: "ir_tools"
+    ip: "10.10.1.20"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5921
+    packages:
+      - "volatility3"
+      - "wireshark"
+      - "yara"
+      - "malware-analysis-tools"
+      - "ghidra"
+      - "ida-free"
+      - "strings"
+      - "file-analyzer"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "gnome"
+      malware_analysis: true
+      reverse_engineering: true
+      sandbox_environment: true
+    description: "Malware analysis and reverse engineering workstation"
+
+  - name: "ir-workstation-analyst2"
+    type: "security"
+    network: "ir_tools"
+    ip: "10.10.1.30"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5922
+    packages:
+      - "log-analysis-tools"
+      - "splunk-free"
+      - "elk-stack"
+      - "regex-tools"
+      - "timeline-tools"
+      - "network-forensics"
+    services:
+      - "sshd"
+      - "splunk"
+    configuration:
+      desktop_environment: "gnome"
+      log_analysis: true
+      timeline_analysis: true
+      correlation_tools: true
+    description: "Log analysis and timeline reconstruction workstation"
+
+  - name: "evidence-server"
+    type: "server"
+    network: "evidence_storage"
+    ip: "10.20.1.10"
+    memory: 1024
+    disk: "12GB"
+    vnc_port: 5923
+    packages:
+      - "case-management-system"
+      - "evidence-locker"
+      - "chain-of-custody"
+      - "secure-storage"
+      - "backup-tools"
+    services:
+      - "case-management"
+      - "evidence-storage"
+      - "backup-service"
+    configuration:
+      encryption_at_rest: true
+      access_controls: "strict"
+      audit_logging: "comprehensive"
+      chain_of_custody: true
+    description: "Secure evidence storage and case management server"
+
+  # Compromised Corporate Systems (Incident Scenarios)
+  - name: "dc-compromised"
+    type: "server"
+    network: "corporate"
+    ip: "192.168.100.10"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5924
+    packages:
+      - "samba-ad-dc"
+      - "bind9"
+      - "malware-sample"
+      - "mimikatz"
+      - "powershell-empire"
+    services:
+      - "samba-ad-dc"
+      - "bind9"
+    incident_artifacts:
+      - "golden_ticket_attack"
+      - "dcsync_attack"
+      - "password_spraying"
+      - "lateral_movement_traces"
+      - "persistence_mechanisms"
+    configuration:
+      domain: "corporate.local"
+      compromise_state: "advanced"
+      attack_timeline: "7_days"
+      evidence_planted: true
+    description: "Compromised domain controller with APT artifacts"
+
+  - name: "fileserver-infected"
+    type: "server"
+    network: "corporate"
+    ip: "192.168.100.20"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5925
+    packages:
+      - "samba"
+      - "ransomware-sample"
+      - "data-exfiltration-tools"
+      - "webshell"
+    services:
+      - "smbd"
+      - "apache2"
+    incident_artifacts:
+      - "ransomware_encryption"
+      - "data_exfiltration"
+      - "webshell_backdoor"
+      - "file_system_timeline"
+      - "network_connections"
+    configuration:
+      compromise_state: "active_ransomware"
+      encrypted_files: "partial"
+      ransom_note: true
+      c2_communications: true
+    description: "File server with active ransomware infection"
+
+  - name: "workstation-patient-zero"
+    type: "workstation"
+    network: "corporate"
+    ip: "192.168.100.100"
+    memory: 1536
+    disk: "6GB"
+    vnc_port: 5926
+    packages:
+      - "firefox"
+      - "thunderbird"
+      - "office-suite"
+      - "trojan-sample"
+      - "keylogger"
+    services:
+      - "sshd"
+    incident_artifacts:
+      - "phishing_email"
+      - "malicious_document"
+      - "trojan_execution"
+      - "credential_theft"
+      - "browser_artifacts"
+    configuration:
+      user_profile: "john_doe"
+      compromise_state: "initial_infection"
+      attack_vector: "phishing_email"
+      timeline: "patient_zero"
+    description: "Patient zero workstation showing initial compromise"
+
+  - name: "workstation-lateral"
+    type: "workstation"
+    network: "corporate"
+    ip: "192.168.100.101"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5927
+    packages:
+      - "firefox"
+      - "office-suite"
+      - "remote-access-trojan"
+    services:
+      - "sshd"
+    incident_artifacts:
+      - "lateral_movement"
+      - "credential_reuse"
+      - "rat_installation"
+      - "persistence_registry"
+      - "network_reconnaissance"
+    configuration:
+      user_profile: "jane_smith"
+      compromise_state: "lateral_movement"
+      attack_method: "credential_stuffing"
+      timeline: "day_3"
+    description: "Workstation compromised via lateral movement"
+
+  - name: "database-targeted"
+    type: "database"
+    network: "corporate"
+    ip: "192.168.100.30"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5928
+    packages:
+      - "mysql-server"
+      - "data-extraction-tools"
+      - "sql-injection-artifacts"
+    services:
+      - "mysql"
+    incident_artifacts:
+      - "data_extraction"
+      - "sql_injection_logs"
+      - "database_dumps"
+      - "privilege_escalation"
+      - "audit_log_tampering"
+    configuration:
+      sensitive_data: "customer_records"
+      compromise_state: "data_exfiltration"
+      attack_method: "sql_injection"
+      timeline: "day_5"
+    description: "Database server with evidence of data exfiltration"
+
+  # Quarantine Network for Isolated Analysis
+  - name: "malware-sandbox"
+    type: "security"
+    network: "quarantine"
+    ip: "172.16.99.10"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5929
+    packages:
+      - "cuckoo-sandbox"
+      - "remnux"
+      - "dynamic-analysis-tools"
+      - "network-simulation"
+    services:
+      - "cuckoo-sandbox"
+      - "web-interface"
+    configuration:
+      isolation: "complete"
+      internet_simulation: true
+      artifact_collection: "comprehensive"
+      api_access: true
+    description: "Isolated malware analysis sandbox environment"
+
+  - name: "suspect-system-clone"
+    type: "workstation"
+    network: "quarantine"
+    ip: "172.16.99.20"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5930
+    packages:
+      - "system-clone-tools"
+      - "forensic-image"
+    services:
+      - "sshd"
+    configuration:
+      system_state: "forensic_clone"
+      write_protection: true
+      evidence_preservation: true
+      analysis_ready: true
+    description: "Forensic clone of compromised system for safe analysis"
+
+# Incident response scenarios and exercises
+ir_scenarios:
+  - name: "Ransomware Outbreak Response"
+    description: "Multi-system ransomware incident with data encryption"
+    difficulty: "intermediate"
+    estimated_time: "4 hours"
+    scenario_type: "active_incident"
+    objectives:
+      - "Identify patient zero and attack vector"
+      - "Contain the ransomware spread"
+      - "Assess scope of encryption"
+      - "Recover critical systems and data"
+      - "Document complete incident timeline"
+    initial_conditions:
+      - "Multiple systems showing encrypted files"
+      - "Ransom notes deployed across network"
+      - "File server partially encrypted"
+      - "Database access compromised"
+    success_criteria:
+      - "Ransomware contained within 2 hours"
+      - "Attack vector identified"
+      - "Recovery plan implemented"
+      - "Complete forensic report generated"
+    timeline_events:
+      - time: "Day 1 - 09:00"
+        event: "Phishing email received by patient zero"
+      - time: "Day 1 - 09:15"
+        event: "Malicious document opened, trojan executed"
+      - time: "Day 1 - 12:30"
+        event: "Lateral movement to file server"
+      - time: "Day 2 - 02:00"
+        event: "Ransomware deployment begins"
+      - time: "Day 2 - 08:00"
+        event: "Incident discovery and response initiation"
+    
+  - name: "Advanced Persistent Threat (APT) Investigation"
+    description: "Long-term APT campaign with multiple attack vectors"
+    difficulty: "advanced"
+    estimated_time: "6 hours"
+    scenario_type: "forensic_investigation"
+    objectives:
+      - "Identify APT tactics, techniques, and procedures"
+      - "Map complete attack timeline"
+      - "Assess data exfiltration scope"
+      - "Identify all compromised systems"
+      - "Develop attribution indicators"
+    initial_conditions:
+      - "Suspicious network traffic detected"
+      - "Unusual domain controller activity"
+      - "Potential data exfiltration"
+      - "Multiple systems with suspicious processes"
+    success_criteria:
+      - "Complete attack chain reconstructed"
+      - "All compromised systems identified"
+      - "Data exfiltration quantified"
+      - "IOCs and TTPs documented"
+    attack_stages:
+      - stage: "initial_access"
+        techniques: ["spear_phishing", "watering_hole"]
+        timeframe: "3_months_ago"
+      - stage: "persistence"
+        techniques: ["golden_ticket", "skeleton_key"]
+        timeframe: "2_months_ago"
+      - stage: "lateral_movement"
+        techniques: ["pass_the_hash", "dcsync"]
+        timeframe: "6_weeks_ago"
+      - stage: "collection"
+        techniques: ["data_staged", "compressed_archives"]
+        timeframe: "2_weeks_ago"
+      - stage: "exfiltration"
+        techniques: ["dns_tunneling", "https_c2"]
+        timeframe: "ongoing"
+    
+  - name: "Insider Threat Investigation"
+    description: "Potential malicious insider activity investigation"
+    difficulty: "intermediate"
+    estimated_time: "3 hours"
+    scenario_type: "behavioral_analysis"
+    objectives:
+      - "Analyze user behavior patterns"
+      - "Identify policy violations"
+      - "Assess data access patterns"
+      - "Determine intent and scope"
+      - "Prepare legal evidence package"
+    initial_conditions:
+      - "Unusual after-hours access detected"
+      - "Large file downloads reported"
+      - "Access to unauthorized systems"
+      - "USB device usage alerts"
+    success_criteria:
+      - "Behavior timeline established"
+      - "Evidence of policy violations documented"
+      - "Data exposure assessed"
+      - "Legal evidence package prepared"
+    investigation_phases:
+      - phase: "data_collection"
+        sources: ["logs", "network_traffic", "endpoint_data"]
+      - phase: "timeline_analysis"
+        focus: ["access_patterns", "data_movements", "system_interactions"]
+      - phase: "behavioral_analysis"
+        techniques: ["anomaly_detection", "pattern_matching"]
+      - phase: "evidence_correlation"
+        methods: ["cross_reference", "timeline_alignment"]
+    
+  - name: "Data Breach Response"
+    description: "Customer data breach incident with regulatory implications"
+    difficulty: "advanced"
+    estimated_time: "5 hours"
+    scenario_type: "compliance_incident"
+    objectives:
+      - "Identify compromised data types and volumes"
+      - "Assess regulatory notification requirements"
+      - "Contain ongoing data exposure"
+      - "Implement customer notification process"
+      - "Document compliance response actions"
+    initial_conditions:
+      - "Database compromise detected"
+      - "Customer PII potentially exposed"
+      - "Regulatory notification requirements"
+      - "Media and customer communications needed"
+    success_criteria:
+      - "Data exposure scope quantified"
+      - "Regulatory notifications completed"
+      - "Customer communications initiated"
+      - "Remediation plan implemented"
+    compliance_frameworks:
+      - "GDPR"
+      - "CCPA"
+      - "HIPAA"
+      - "PCI-DSS"
+    
+  - name: "Supply Chain Attack Investigation"
+    description: "Third-party software compromise investigation"
+    difficulty: "advanced"
+    estimated_time: "4 hours"
+    scenario_type: "complex_investigation"
+    objectives:
+      - "Identify compromised software components"
+      - "Trace attack propagation"
+      - "Assess organizational impact"
+      - "Coordinate with vendors and authorities"
+      - "Implement supply chain security measures"
+    initial_conditions:
+      - "Suspicious software update detected"
+      - "Multiple organizations affected"
+      - "Vendor communication required"
+      - "Potential nation-state involvement"
+    success_criteria:
+      - "Compromised components identified"
+      - "Impact assessment completed"
+      - "Vendor coordination established"
+      - "Supply chain controls implemented"
+
+# Digital forensics procedures and techniques
+forensics_procedures:
+  evidence_acquisition:
+    - procedure: "live_system_imaging"
+      tools: ["dd", "dcfldd", "ftk-imager"]
+      purpose: "Create forensic images of running systems"
+    - procedure: "memory_acquisition"
+      tools: ["volatility", "winpmem", "linpmem"]
+      purpose: "Capture volatile memory for analysis"
+    - procedure: "network_capture"
+      tools: ["wireshark", "tcpdump", "networkminer"]
+      purpose: "Capture and analyze network traffic"
+    - procedure: "log_collection"
+      tools: ["log2timeline", "plaso", "custom-scripts"]
+      purpose: "Collect and preserve system logs"
+      
+  evidence_analysis:
+    - procedure: "filesystem_analysis"
+      tools: ["autopsy", "sleuthkit", "x-ways"]
+      purpose: "Analyze file system structures and artifacts"
+    - procedure: "memory_analysis"
+      tools: ["volatility3", "rekall", "memoryze"]
+      purpose: "Analyze memory dumps for malware and artifacts"
+    - procedure: "malware_analysis"
+      tools: ["ghidra", "ida", "cuckoo-sandbox"]
+      purpose: "Reverse engineer and analyze malicious code"
+    - procedure: "timeline_analysis"
+      tools: ["plaso", "timeline-explorer", "elastic-stack"]
+      purpose: "Create and analyze incident timelines"
+      
+  evidence_correlation:
+    - procedure: "cross_system_correlation"
+      tools: ["splunk", "elk-stack", "custom-correlation"]
+      purpose: "Correlate artifacts across multiple systems"
+    - procedure: "ioc_analysis"
+      tools: ["yara", "stix-shifter", "misp"]
+      purpose: "Analyze indicators of compromise"
+    - procedure: "attribution_analysis"
+      tools: ["maltego", "i2-analyst", "custom-tools"]
+      purpose: "Develop attribution and threat actor profiling"
+
+# Incident response tools and capabilities
+ir_tools_catalog:
+  triage_and_assessment:
+    - tool: "volatility3"
+      purpose: "Memory forensics and analysis"
+      use_cases: ["malware_detection", "process_analysis", "network_connections"]
+    - tool: "autopsy"
+      purpose: "Digital forensics platform"
+      use_cases: ["filesystem_analysis", "keyword_search", "timeline_creation"]
+    - tool: "yara"
+      purpose: "Malware identification and classification"
+      use_cases: ["malware_detection", "ioc_matching", "threat_hunting"]
+      
+  containment_and_eradication:
+    - tool: "network_isolation_scripts"
+      purpose: "Automated network containment"
+      use_cases: ["system_quarantine", "network_segmentation"]
+    - tool: "malware_removal_tools"
+      purpose: "Malware eradication"
+      use_cases: ["malware_cleanup", "system_restoration"]
+    - tool: "patch_management"
+      purpose: "Vulnerability remediation"
+      use_cases: ["security_updates", "system_hardening"]
+      
+  recovery_and_lessons_learned:
+    - tool: "backup_restoration"
+      purpose: "System and data recovery"
+      use_cases: ["data_recovery", "system_restoration"]
+    - tool: "documentation_tools"
+      purpose: "Incident documentation and reporting"
+      use_cases: ["report_generation", "lessons_learned"]
+    - tool: "improvement_tracking"
+      purpose: "Process improvement tracking"
+      use_cases: ["metrics_collection", "process_optimization"]
+
+# Chain of custody and evidence management
+evidence_management:
+  acquisition:
+    - step: "evidence_identification"
+      requirements: ["unique_identifier", "description", "location"]
+      documentation: "evidence_log"
+    - step: "evidence_preservation"
+      requirements: ["write_protection", "hash_verification", "secure_storage"]
+      documentation: "preservation_certificate"
+    - step: "chain_initiation"
+      requirements: ["initial_custodian", "timestamp", "witness"]
+      documentation: "custody_form"
+      
+  transfer:
+    - step: "custody_transfer"
+      requirements: ["receiving_party", "transfer_reason", "witness"]
+      documentation: "transfer_log"
+    - step: "integrity_verification"
+      requirements: ["hash_comparison", "seal_inspection", "condition_check"]
+      documentation: "integrity_report"
+      
+  analysis:
+    - step: "analysis_authorization"
+      requirements: ["authorized_analyst", "analysis_scope", "approval"]
+      documentation: "analysis_request"
+    - step: "analysis_execution"
+      requirements: ["methodology", "tools_used", "findings"]
+      documentation: "analysis_report"
+    - step: "analysis_completion"
+      requirements: ["results", "evidence_return", "final_custody"]
+      documentation: "completion_certificate"
+
+# Legal and regulatory considerations
+legal_framework:
+  evidence_admissibility:
+    - requirement: "authentication"
+      description: "Evidence must be properly authenticated"
+      procedures: ["chain_of_custody", "integrity_verification"]
+    - requirement: "relevance"
+      description: "Evidence must be relevant to the case"
+      procedures: ["scope_definition", "relevance_documentation"]
+    - requirement: "reliability"
+      description: "Evidence collection must be reliable"
+      procedures: ["standard_procedures", "tool_validation"]
+      
+  privacy_protection:
+    - requirement: "data_minimization"
+      description: "Collect only necessary data"
+      procedures: ["scope_limitation", "targeted_collection"]
+    - requirement: "access_controls"
+      description: "Limit access to authorized personnel"
+      procedures: ["role_based_access", "access_logging"]
+    - requirement: "data_retention"
+      description: "Retain evidence only as long as necessary"
+      procedures: ["retention_policies", "secure_disposal"]
+      
+  regulatory_compliance:
+    - framework: "gdpr"
+      requirements: ["breach_notification", "data_protection_impact_assessment"]
+    - framework: "hipaa"
+      requirements: ["phi_protection", "business_associate_agreements"]
+    - framework: "sox"
+      requirements: ["financial_controls", "audit_documentation"]
+
+# Performance metrics and KPIs
+performance_metrics:
+  response_times:
+    - metric: "detection_time"
+      target: "< 1 hour"
+      measurement: "time_from_incident_to_detection"
+    - metric: "response_initiation"
+      target: "< 30 minutes"
+      measurement: "time_from_detection_to_response_start"
+    - metric: "containment_time"
+      target: "< 2 hours"
+      measurement: "time_from_response_to_containment"
+    - metric: "recovery_time"
+      target: "< 24 hours"
+      measurement: "time_from_containment_to_full_recovery"
+      
+  quality_metrics:
+    - metric: "false_positive_rate"
+      target: "< 10%"
+      measurement: "false_alarms / total_alerts"
+    - metric: "evidence_integrity"
+      target: "100%"
+      measurement: "evidence_with_intact_chain_of_custody"
+    - metric: "documentation_completeness"
+      target: "95%"
+      measurement: "complete_incident_reports / total_incidents"
+
+# Assessment and certification
+assessment_criteria:
+  - category: "Incident Detection and Analysis"
+    weight: 25
+    scenarios: 2
+    time_limit: "2 hours"
+    
+  - category: "Containment and Eradication"
+    weight: 20
+    scenarios: 2
+    time_limit: "90 minutes"
+    
+  - category: "Forensic Analysis"
+    weight: 25
+    scenarios: 1
+    time_limit: "3 hours"
+    
+  - category: "Recovery and Lessons Learned"
+    weight: 15
+    scenarios: 1
+    time_limit: "60 minutes"
+    
+  - category: "Documentation and Communication"
+    weight: 15
+    scenarios: 1
+    time_limit: "90 minutes"
+
+# Learning outcomes
+learning_outcomes:
+  - "Master incident response methodology (NIST, SANS)"
+  - "Develop digital forensics investigation skills"
+  - "Learn malware analysis and reverse engineering"
+  - "Practice evidence collection and chain of custody"
+  - "Understand legal and regulatory requirements"
+  - "Develop incident communication skills"
+  - "Learn threat hunting techniques"
+  - "Practice timeline analysis and correlation"
+
+# Prerequisites and target audience
+prerequisites:
+  - "Network security fundamentals"
+  - "Operating system internals (Windows/Linux)"
+  - "Malware analysis basics"
+  - "Legal and regulatory awareness"
+  - "Project management skills"
+
+target_audience:
+  - "Incident response team members"
+  - "Digital forensics investigators"
+  - "Security analysts"
+  - "CSIRT team members"
+  - "Cybersecurity managers"
+  - "Legal and compliance professionals"
+
+# Deployment considerations
+deployment_notes:
+  estimated_deployment_time: "18-25 minutes"
+  complexity: "high"
+  suitable_for: ["intermediate", "advanced"]
+  concurrent_users: "6-10"
+  evidence_storage_requirements: "High security, encrypted storage"
+  legal_considerations: "Ensure compliance with local laws and regulations"

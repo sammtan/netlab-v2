@@ -1,0 +1,192 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netlab-uvdnl"
+version = "0.1.0"
+description = "Universal Parametric Cyber Range Deployment Tool"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "NetLab Team", email = "dev@netlab.dev"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Networking",
+    "Topic :: Security",
+    "Topic :: System :: Systems Administration",
+]
+keywords = ["networking", "cybersecurity", "virtualization", "cyber-range", "devops"]
+requires-python = ">=3.10"
+
+dependencies = [
+    "click>=8.0.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+    "psutil>=5.9.0",
+    "jinja2>=3.1.0",
+    "paramiko>=3.0.0",
+    "netaddr>=0.8.0",
+    "requests>=2.28.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.0.0",
+]
+
+libvirt = [
+    "libvirt-python>=9.0.0",
+]
+
+virtualbox = [
+    "pyvbox>=2.2.0",
+]
+
+docker = [
+    "docker>=6.0.0",
+]
+
+gui = [
+    "PyQt6>=6.4.0",
+    "PyQt6-Qt6>=6.4.0",
+]
+
+all = [
+    "netlab-uvdnl[libvirt,virtualbox,docker,gui]"
+]
+
+[project.urls]
+Homepage = "https://github.com/netlab/uvdnl"
+Documentation = "https://netlab.github.io/uvdnl"
+Repository = "https://github.com/netlab/uvdnl.git"
+"Bug Tracker" = "https://github.com/netlab/uvdnl/issues"
+
+[project.scripts]
+uvdnl = "cli.main:app"
+netlab = "cli.main:app"
+
+[tool.setuptools.packages.find]
+include = ["cli*", "core*", "scripts*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.json", "*.jinja2", "*.j2"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | venv
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["cli", "core", "scripts"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "libvirt.*",
+    "pyvbox.*",
+    "docker.*",
+    "psutil.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=cli",
+    "--cov=core",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "requires_root: marks tests that require root privileges",
+    "requires_kvm: marks tests that require KVM support",
+    "requires_virtualbox: marks tests that require VirtualBox",
+    "requires_docker: marks tests that require Docker",
+]
+
+[tool.coverage.run]
+source = ["cli", "core", "scripts"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/build/*",
+    "*/dist/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

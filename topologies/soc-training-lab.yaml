@@ -1,0 +1,538 @@
+name: soc-training-lab
+description: Security Operations Center (SOC) training environment
+version: "2.0"
+
+# Resource allocation for comprehensive SOC training
+constraints:
+  max_ram: 16384    # 16GB RAM
+  max_disk: 75000   # 75GB disk
+  max_cpu: 12       # 12 CPU cores
+
+# Enterprise-style network for SOC operations
+networks:
+  corporate:
+    subnet: "10.10.0.0/16"
+    gateway: "10.10.0.1"
+    purpose: "Corporate network with user workstations and servers"
+    security_zone: "internal"
+    
+  dmz:
+    subnet: "172.16.1.0/24"
+    gateway: "172.16.1.1" 
+    purpose: "DMZ with public-facing services"
+    security_zone: "dmz"
+    
+  security:
+    subnet: "192.168.100.0/24"
+    gateway: "192.168.100.1"
+    purpose: "SOC infrastructure and security tools"
+    security_zone: "management"
+    
+  critical:
+    subnet: "10.20.0.0/24"
+    gateway: "10.20.0.1"
+    purpose: "Critical business systems and databases"
+    security_zone: "restricted"
+
+# Comprehensive SOC infrastructure
+vms:
+  # SOC Infrastructure
+  - name: "siem-server"
+    type: "security"
+    network: "security"
+    ip: "192.168.100.10"
+    memory: 4096
+    disk: "20GB"
+    vnc_port: 5920
+    packages:
+      - "elasticsearch"
+      - "logstash"
+      - "kibana"
+      - "wazuh-manager"
+      - "suricata"
+    services:
+      - "elasticsearch"
+      - "logstash"
+      - "kibana"
+      - "wazuh-manager"
+    configuration:
+      elasticsearch_heap: "2g"
+      log_retention_days: 90
+      alert_rules: "comprehensive"
+    description: "Central SIEM with ELK stack and Wazuh for log analysis"
+
+  - name: "soc-workstation-1"
+    type: "workstation"
+    network: "security"
+    ip: "192.168.100.20"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5921
+    packages:
+      - "firefox"
+      - "wireshark"
+      - "volatility"
+      - "autopsy"
+      - "maltego"
+      - "yara"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "gnome"
+      forensics_tools: true
+      threat_hunting_tools: true
+    description: "SOC analyst workstation with investigation tools"
+
+  - name: "soc-workstation-2"
+    type: "workstation"
+    network: "security"
+    ip: "192.168.100.21"
+    memory: 2048
+    disk: "10GB"
+    vnc_port: 5922
+    packages:
+      - "firefox"
+      - "wireshark"
+      - "nmap"
+      - "burpsuite"
+      - "metasploit"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "gnome"
+      incident_response_tools: true
+    description: "SOC analyst workstation for incident response"
+
+  - name: "threat-intel-server"
+    type: "security"
+    network: "security"
+    ip: "192.168.100.30"
+    memory: 2048
+    disk: "15GB"
+    vnc_port: 5923
+    packages:
+      - "misp"
+      - "opencti"
+      - "threatconnect"
+      - "yara"
+    services:
+      - "misp"
+      - "apache2"
+      - "mysql"
+    configuration:
+      threat_feeds: true
+      ioc_sharing: true
+      automated_enrichment: true
+    description: "Threat intelligence platform for IOC management"
+
+  # Network Infrastructure 
+  - name: "core-firewall"
+    type: "firewall"
+    network: "security"
+    ip: "192.168.100.1"
+    memory: 1024
+    disk: "4GB"
+    vnc_port: 5924
+    packages:
+      - "pfsense"
+      - "suricata"
+      - "pfblockerng"
+    services:
+      - "pfsense"
+      - "suricata"
+    configuration:
+      ids_enabled: true
+      geo_blocking: true
+      threat_feeds: true
+      logging: "full"
+    description: "Core firewall with IDS/IPS capabilities"
+
+  # Corporate Network Assets
+  - name: "domain-controller"
+    type: "server"
+    network: "corporate"
+    ip: "10.10.1.10"
+    memory: 2048
+    disk: "8GB"
+    vnc_port: 5925
+    packages:
+      - "samba-ad-dc"
+      - "bind9"
+      - "ntpd"
+    services:
+      - "samba-ad-dc"
+      - "bind9"
+      - "ntp"
+    configuration:
+      domain: "corporate.local"
+      logging: "security_events"
+      audit_policy: "detailed"
+    description: "Windows Active Directory domain controller"
+
+  - name: "file-server"
+    type: "server"
+    network: "corporate"
+    ip: "10.10.2.10"
+    memory: 1536
+    disk: "12GB"
+    vnc_port: 5926
+    packages:
+      - "samba"
+      - "nfs-kernel-server"
+      - "audit"
+    services:
+      - "smbd"
+      - "nmbd"
+      - "nfs-server"
+    configuration:
+      access_controls: "strict"
+      audit_file_access: true
+      antivirus_scanning: true
+    description: "Corporate file server with audit logging"
+
+  - name: "employee-workstation-1"
+    type: "workstation"
+    network: "corporate"
+    ip: "10.10.10.100"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5927
+    packages:
+      - "firefox"
+      - "libreoffice"
+      - "thunderbird"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "xfce"
+      endpoint_protection: true
+      user_activity_monitoring: true
+    description: "Employee workstation with monitoring agents"
+
+  - name: "employee-workstation-2"
+    type: "workstation"  
+    network: "corporate"
+    ip: "10.10.10.101"
+    memory: 1024
+    disk: "6GB"
+    vnc_port: 5928
+    packages:
+      - "firefox"
+      - "libreoffice"
+      - "thunderbird"
+    services:
+      - "sshd"
+    configuration:
+      desktop_environment: "xfce"
+      endpoint_protection: true
+      user_activity_monitoring: true
+    description: "Employee workstation for simulation scenarios"
+
+  # DMZ Services
+  - name: "web-server-public"
+    type: "server"
+    network: "dmz"
+    ip: "172.16.1.10"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5929
+    packages:
+      - "nginx"
+      - "php"
+      - "mysql-client"
+      - "mod_security"
+    services:
+      - "nginx"
+      - "php-fpm"
+    configuration:
+      waf_enabled: true
+      access_logging: "detailed"
+      security_headers: true
+    description: "Public-facing web server with WAF protection"
+
+  - name: "email-server"
+    type: "server"
+    network: "dmz"
+    ip: "172.16.1.20"
+    memory: 1536
+    disk: "8GB"
+    vnc_port: 5930
+    packages:
+      - "postfix"
+      - "dovecot"
+      - "spamassassin"
+      - "clamav"
+    services:
+      - "postfix"
+      - "dovecot"
+      - "spamassassin"
+    configuration:
+      spam_filtering: true
+      malware_scanning: true
+      encryption: "tls"
+    description: "Email server with security filtering"
+
+  # Critical Systems
+  - name: "database-critical"
+    type: "database"
+    network: "critical"
+    ip: "10.20.0.10"
+    memory: 2048
+    disk: "12GB"
+    vnc_port: 5931
+    packages:
+      - "postgresql"
+      - "pgaudit"
+      - "pg_stat_statements"
+    services:
+      - "postgresql"
+    configuration:
+      encryption_at_rest: true
+      audit_logging: "all"
+      connection_monitoring: true
+    description: "Critical database with comprehensive auditing"
+
+  - name: "backup-server"
+    type: "server"
+    network: "critical"
+    ip: "10.20.0.20"
+    memory: 1024
+    disk: "8GB"
+    vnc_port: 5932
+    packages:
+      - "bacula"
+      - "duplicity"
+      - "rsync"
+    services:
+      - "bacula-director"
+      - "bacula-storage"
+    configuration:
+      encryption: true
+      integrity_checking: true
+      retention_policy: "1_year"
+    description: "Backup server for critical data protection"
+
+# SOC-specific security policies  
+security_policies:
+  - name: "soc_monitoring_access"
+    description: "SOC team can monitor all networks"
+    from: "security"
+    to: ["corporate", "dmz", "critical"]
+    action: "monitor"
+    protocols: ["icmp", "tcp", "udp"]
+    logging: true
+    
+  - name: "critical_system_isolation"
+    description: "Critical systems isolated except for authorized access"
+    from: "critical"
+    to: "*"
+    action: "deny"
+    exceptions:
+      - source: "security"
+        ports: ["22", "5432"]
+      - source: "corporate"  
+        ports: ["5432"]
+        conditions: ["business_hours"]
+    logging: true
+    
+  - name: "dmz_internal_restrictions"
+    description: "DMZ services cannot initiate internal connections"
+    from: "dmz"
+    to: ["corporate", "critical"]
+    action: "deny"
+    exceptions:
+      - destination: "corporate"
+        ports: ["389", "636"]  # LDAP for authentication
+    logging: true
+
+# SOC training scenarios
+training_scenarios:
+  - name: "Malware Incident Response"
+    description: "Detect and respond to malware infection"
+    difficulty: "intermediate"
+    estimated_time: "120 minutes"
+    scenario_type: "incident_response"
+    objectives:
+      - "Detect suspicious network activity"
+      - "Isolate infected workstation"
+      - "Analyze malware sample"
+      - "Implement containment measures"
+      - "Document incident timeline"
+    initial_conditions:
+      - "Malware deployed on employee-workstation-2"
+      - "Command and control traffic active"
+      - "Lateral movement attempts"
+    success_criteria:
+      - "Malware detected within 15 minutes"
+      - "Infected system isolated within 30 minutes"
+      - "Complete incident report generated"
+    
+  - name: "Phishing Campaign Detection"
+    description: "Identify and respond to phishing attack"
+    difficulty: "beginner"
+    estimated_time: "90 minutes"
+    scenario_type: "detection"
+    objectives:
+      - "Identify suspicious email patterns"
+      - "Analyze phishing infrastructure"
+      - "Block malicious domains"
+      - "User awareness notification"
+    initial_conditions:
+      - "Phishing emails sent to multiple users"
+      - "Some users clicked malicious links"
+      - "Credential harvesting attempt"
+    success_criteria:
+      - "Phishing campaign identified"
+      - "Malicious infrastructure blocked"
+      - "Affected users notified"
+    
+  - name: "APT Investigation"
+    description: "Advanced Persistent Threat hunting and analysis"
+    difficulty: "advanced"
+    estimated_time: "180 minutes"
+    scenario_type: "threat_hunting"
+    objectives:
+      - "Identify indicators of compromise"
+      - "Track attacker techniques"
+      - "Map attack timeline"
+      - "Assess data exposure"
+      - "Implement long-term monitoring"
+    initial_conditions:
+      - "Subtle backdoor installed"
+      - "Slow data exfiltration"
+      - "Living-off-the-land techniques"
+    success_criteria:
+      - "APT activity discovered"
+      - "Attack vector identified"
+      - "Data exposure assessed"
+      - "Remediation plan created"
+    
+  - name: "Insider Threat Detection"
+    description: "Detect and investigate potential insider threats"
+    difficulty: "intermediate"
+    estimated_time: "150 minutes"
+    scenario_type: "behavioral_analysis"
+    objectives:
+      - "Analyze user behavior patterns"
+      - "Identify anomalous activities"
+      - "Correlate multiple data sources"
+      - "Build investigation timeline"
+    initial_conditions:
+      - "Employee accessing unusual data"
+      - "After-hours system access"
+      - "Large data downloads"
+    success_criteria:
+      - "Anomalous behavior detected"
+      - "Investigation evidence collected"
+      - "Risk assessment completed"
+
+# SIEM correlation rules
+siem_rules:
+  - name: "multiple_failed_logins"
+    description: "Multiple failed login attempts from same source"
+    rule_type: "correlation"
+    time_window: "5 minutes"
+    threshold: 5
+    severity: "medium"
+    actions: ["alert", "block_ip"]
+    
+  - name: "lateral_movement_detection"
+    description: "Detect lateral movement patterns"
+    rule_type: "behavioral"
+    indicators: ["multiple_host_access", "privilege_escalation", "unusual_protocols"]
+    severity: "high"
+    actions: ["alert", "isolate_host"]
+    
+  - name: "data_exfiltration_detection"
+    description: "Detect large data transfers"
+    rule_type: "volume"
+    threshold: "100MB in 10 minutes"
+    protocols: ["http", "https", "ftp", "dns"]
+    severity: "high"
+    actions: ["alert", "block_traffic"]
+
+# Threat intelligence feeds
+threat_intelligence:
+  - name: "malware_domain_feed"
+    source: "abuse.ch"
+    feed_type: "domains"
+    update_frequency: "hourly"
+    action: "block"
+    
+  - name: "tor_exit_nodes"
+    source: "torproject.org"
+    feed_type: "ip_addresses"  
+    update_frequency: "daily"
+    action: "monitor"
+    
+  - name: "compromised_credentials"
+    source: "haveibeenpwned"
+    feed_type: "credentials"
+    update_frequency: "weekly"
+    action: "alert"
+
+# Monitoring and alerting configuration
+monitoring:
+  - metric: "failed_login_rate"
+    threshold: "10 per minute"
+    severity: "medium"
+    notification: ["soc_team", "security_manager"]
+    
+  - metric: "network_anomaly_score"
+    threshold: "> 7.5"
+    severity: "high"
+    notification: ["soc_team", "incident_response"]
+    
+  - metric: "malware_detection_count"
+    threshold: "> 1"
+    severity: "critical"
+    notification: ["soc_team", "ciso", "incident_response"]
+
+# Performance and capacity planning
+capacity_planning:
+  log_ingestion_rate: "10000 events/second"
+  storage_retention: "90 days"
+  search_performance: "< 5 seconds"
+  alert_response_time: "< 2 minutes"
+  concurrent_analysts: 6
+
+# Assessment and certification
+assessment:
+  - category: "Incident Detection"
+    scenarios: 2
+    points: 30
+    time_limit: "45 minutes"
+    
+  - category: "Investigation & Analysis"
+    scenarios: 3
+    points: 40
+    time_limit: "90 minutes"
+    
+  - category: "Response & Containment"
+    scenarios: 2
+    points: 30
+    time_limit: "60 minutes"
+
+# Learning objectives
+learning_outcomes:
+  - "Master SIEM operation and log analysis"
+  - "Develop incident response procedures"
+  - "Learn threat hunting techniques"
+  - "Understand behavioral analytics"
+  - "Practice forensic investigation"
+  - "Implement threat intelligence"
+  - "Coordinate security operations"
+
+# Prerequisites and target audience
+prerequisites:
+  - "Network security fundamentals"
+  - "Windows and Linux administration"
+  - "Basic scripting knowledge"
+  - "Security concepts understanding"
+
+target_audience:
+  - "SOC analysts (Level 1-3)"
+  - "Incident responders"
+  - "Threat hunters"
+  - "Security engineers"
+  - "CSIRT team members"
