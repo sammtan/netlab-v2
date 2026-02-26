@@ -1,123 +1,48 @@
 # NetLab V2 - Universal Parametric Cyber Range Deployment Tool
 
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-green.svg)](https://github.com/sammtan/netlab-v2)
+[![Status](https://img.shields.io/badge/Status-Active%20Development-yellow.svg)](https://github.com/sammtan/netlab-v2)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20|%20Linux-lightgrey.svg)](https://github.com/sammtan/netlab-v2)
 
-> **Enterprise-Grade Network Laboratory Platform for Cybersecurity Training, Research, and Testing**
+> **Cyber Range Framework in Active Development — for Cybersecurity Training, Research, and Testing**
 
-NetLab V2 is a comprehensive, containerized platform for deploying parametric cyber ranges with enterprise network topologies. Built for cybersecurity professionals, researchers, and educators who need realistic, isolated network environments for training, testing, and research.
+NetLab V2 is a cyber range framework for deploying parametric network topologies using VirtualBox and Docker backends. Built for cybersecurity professionals, researchers, and educators who need realistic, isolated network environments for training, testing, and research.
+
+> ⚠️ **Note**: NetLab V2 is under active development. Some features listed below are not yet fully implemented. See individual sections for details on what is production-ready versus work in progress.
 
 ## 🚀 Key Features
 
 ### 🏗️ **Infrastructure Management**
 - **Isolated Containerized Environment** - Complete network isolation using Docker
 - **Enterprise Network Topologies** - DMZ, Corporate, Security VLANs with proper segmentation
-- **Scalable VM Deployment** - Support for 17+ concurrent VMs with resource management
-- **Bridge Networking** - Software-defined networking with VLAN segmentation
+- **Scalable VM Deployment** - Resource management with capacity planning
+- **Bridge Networking** - Software-defined networking on Linux and Windows
 - **Resource Optimization** - Intelligent resource allocation and constraint management
 
 ### 🌐 **Network Capabilities**
 - **Multi-VLAN Architecture** - DMZ (192.168.10.0/24), Corporate (192.168.20.0/24), Security (192.168.40.0/24)
 - **Inter-Network Routing** - Configurable routing between network segments
 - **Network Device Simulation** - Firewalls, routers, switches, IDS/IPS systems
-- **Traffic Analysis Tools** - Built-in network monitoring and analysis capabilities
-- **Security Testing Platform** - Designed for penetration testing and security research
+- **Linux Bridge Backend** - Creates bridges using `brctl`/`ip` with full IP configuration ✅
+- **Windows Hyper-V Backend** - Creates internal switches via PowerShell `New-VMSwitch` ✅
+- **macOS** - Bridge networking is tracked logically; actual bridge creation is not implemented 🚧
+- **Device Attachment** - The bridge backend tracks device-to-network connections as metadata; actual interface attachment is delegated to the compute backend (VirtualBox, Docker)
 
 ### 🖥️ **Virtual Machine Management**
-- **Multi-Architecture Support** - x86_64, ARM, MIPS, PowerPC VM support
-- **Automated Deployment** - One-command deployment of entire network topologies
-- **VNC Console Access** - Remote console access for all VMs
-- **Configuration Automation** - Auto-configuration ISOs and cloud-init support
-- **State Management** - VM snapshots, cloning, and state persistence
+- **x86_64 Architecture** - VirtualBox and Docker backends for x86_64 platforms ✅
+- **Automated Deployment** - One-command deployment of entire network topologies (`lab up`) ✅
+- **VNC Console Access** - Remote console access for VirtualBox VMs ✅
+- **Configuration Automation** - Auto-configuration ISOs and cloud-init support ✅
+- **State Management** - VM snapshots, cloning, and state persistence ✅
+
+> ⚠️ **Multi-Architecture Note**: ARM, MIPS, and PowerPC support are not implemented. The VirtualBox backend only has OS-type detection for x86_64 operating systems (Ubuntu, Debian, CentOS, Windows, VyOS, pfSense).
 
 ### 🎮 **Management Interface**
-- **Web Dashboard** - Real-time network topology visualization
-- **REST API** - Complete API for automation and integration
-- **CLI Tools** - Command-line interface for power users
-- **Network Testing Suite** - Comprehensive connectivity and performance testing
-- **Monitoring & Alerts** - Real-time system monitoring with alerting
-
-## 📊 **Proven Test Results**
-
-### **Infrastructure Validation** ✅
-```
-✅ Network Infrastructure: 100% Operational
-   • Bridge Networks: 3/3 configured (DMZ, Corporate, Security)
-   • IP Addressing: 192.168.10.1/24, 192.168.20.1/24, 192.168.40.1/24
-   • VLAN Segmentation: Complete network isolation achieved
-
-✅ VM Deployment: 100% Success Rate  
-   • Virtual Machines: 17 VMs deployed successfully
-   • Storage Utilization: 95GB used of 124GB available (76.6% efficiency)
-   • Memory Management: Efficient resource allocation with 3GB buffer
-   • Boot Success Rate: 100% VM boot success
-
-✅ Container Isolation: Complete Environment Separation
-   • IDEV (Development): Isolated environment with Python 3.11, Go 1.21.5, Rust 1.89.0
-   • ODRE (Runtime): Isolated virtualization environment with QEMU/KVM
-   • Host Protection: Zero host system contamination
-```
-
-### **Network Performance Metrics** 📊
-```
-📊 Deployment Speed: 
-   • Full topology deployment: < 10 minutes
-   • Individual VM boot time: < 2 minutes per VM
-   • Network convergence: < 30 seconds
-   
-📊 Network Performance:
-   • Bridge latency: < 1ms inter-VLAN communication
-   • TAP interface throughput: Full gigabit performance
-   • Concurrent VM support: 17+ simultaneous VMs tested
-   • Network bridge capacity: 50+ VM theoretical limit
-
-📊 Resource Efficiency:
-   • Container overhead: < 5% of host resources
-   • VM memory optimization: Dynamic allocation
-   • Storage efficiency: Sparse disk allocation
-   • CPU utilization: Multi-core optimization
-```
-
-### **Security & Isolation Testing** 🔒
-```
-🔒 Complete Network Isolation:
-   • Bridge network isolation: 100% separation between VLANs
-   • Container privilege separation: Non-root operation
-   • Host network protection: Zero host network interference
-   
-🔒 VNC Security:
-   • Secure port mapping: 5920-5922 for VM console access
-   • Isolated VNC sessions: Per-VM dedicated access
-   • Authentication ready: Configurable VNC passwords
-
-🔒 Configuration Security:
-   • ISO-based configuration: Secure script delivery
-   • Automated hardening: Security-first VM deployment
-   • Audit trails: Complete deployment logging
-```
-
-### **Functional Testing Results** 🧪
-```
-🧪 Network Topology Tests:
-   • Enterprise topology deployment: ✅ PASSED
-   • Multi-VLAN configuration: ✅ PASSED  
-   • Bridge connectivity: ✅ PASSED
-   • TAP interface creation: ✅ PASSED (3/3 interfaces active)
-
-🧪 VM Management Tests:
-   • QEMU VM deployment: ✅ PASSED (Edge Firewall, Web Server, Core Router)
-   • VNC console access: ✅ PASSED (Ports 5920-5922 active)
-   • ISO configuration mounting: ✅ PASSED (Auto-config ready)
-   • VM process management: ✅ PASSED (Clean start/stop)
-
-🧪 Web Management Interface:
-   • Dashboard accessibility: ✅ PASSED (Port 9000)
-   • API endpoint functionality: ✅ PASSED (/api/status, /api/vms, /api/network)
-   • Real-time monitoring: ✅ PASSED (Live VM status updates)
-   • Interactive topology: ✅ PASSED (Click-to-connect VNC)
-```
+- **Static Web Server** - `api-server.py` serves static HTML dashboards with basic JSON API endpoints (`/api/status`, `/api/vms`, `/api/network`, `/api/logs`) ✅
+- **CLI Tools** - `typer`/`rich`-based command-line interface with `lab up`, `plan`, `scan`, `backends` commands ✅
+- **`lab down` / `lab status`** - 🚧 Not yet implemented (prints placeholder message)
+- **`sources` / `catalog` commands** - 🚧 Not yet implemented (prints placeholder message)
 
 ## 🏛️ **System Architecture**
 
@@ -273,40 +198,40 @@ netlab-bridge.py dev           # Enter development environment
 netlab-bridge.py runtime       # Enter runtime environment
 netlab-bridge.py cleanup       # Clean up all environments
 
-# Development Tools (inside IDEV)
-netlab-deploy <topology.yaml>   # Deploy network topology
-netlab-validate <topology.yaml> # Validate configuration
-netlab-monitor                  # Real-time monitoring
-netlab-export <lab-name>        # Export lab configuration
-
-# Testing Suite
-network-tester.py               # Comprehensive network testing
-infrastructure-test.py          # Infrastructure validation
-security-scanner.py             # Security configuration check
-performance-benchmark.py        # Performance testing
+# NetLab CLI (uvdnl)
+uvdnl init                      # Initialize workspace ✅
+uvdnl scan                      # Scan host resources and capabilities ✅
+uvdnl backends                  # Show available backends and status ✅
+uvdnl plan <topology.yaml>      # Plan a topology deployment ✅
+uvdnl lab up <topology.yaml>    # Deploy a network topology ✅
+uvdnl lab down <topology.yaml>  # Destroy a topology 🚧 (not yet implemented)
+uvdnl lab status                # Show lab status 🚧 (not yet implemented)
+uvdnl sources                   # Manage device images 🚧 (not yet implemented)
+uvdnl catalog                   # Browse device catalog 🚧 (not yet implemented)
 ```
 
 ### **Web Management Interface**
-- **Dashboard URL**: http://localhost:9000
-- **API Base URL**: http://localhost:9000/api/
-- **Features**:
-  - Real-time network topology visualization
-  - Interactive VM management (start/stop/restart)
-  - One-click VNC access
-  - Network performance monitoring
-  - Configuration management
-  - Test execution and results
+- **Server URL**: http://localhost:9999
+- **API Base URL**: http://localhost:9999/api/
+- **Implementation**: `api-server.py` is a Python `SimpleHTTPRequestHandler`-based server that serves static HTML files and provides basic JSON API endpoints.
+- **Available API Endpoints**:
+  - `GET /api/status` — System and resource metrics
+  - `GET /api/vms` — QEMU process list matched against static VM config
+  - `GET /api/network` — Network bridge information
+  - `GET /api/logs` — Recent log entries
+
+> ⚠️ **Note**: Interactive VM management (start/stop via the web), real-time topology visualization, and VNC console integration are not implemented in `api-server.py`.
 
 ### **REST API Endpoints**
 ```http
-GET  /api/status              # System status and metrics
-GET  /api/vms                 # VM list and status
-GET  /api/network             # Network topology info
-GET  /api/logs                # System logs
-POST /api/vms/{id}/start      # Start specific VM
-POST /api/vms/{id}/stop       # Stop specific VM  
-POST /api/test/connectivity   # Run network connectivity tests
-GET  /api/topology/{name}     # Get topology configuration
+GET  /api/status              # System status and metrics ✅
+GET  /api/vms                 # VM list and status ✅
+GET  /api/network             # Network topology info ✅
+GET  /api/logs                # System logs ✅
+POST /api/vms/{id}/start      # Start specific VM 🚧 (not implemented)
+POST /api/vms/{id}/stop       # Stop specific VM 🚧 (not implemented)
+POST /api/test/connectivity   # Run network connectivity tests 🚧 (not implemented)
+GET  /api/topology/{name}     # Get topology configuration 🚧 (not implemented)
 ```
 
 ## 🎯 **Proven Use Cases**
@@ -449,47 +374,21 @@ GET  /api/topology/{name}     # Get topology configuration
    • Export capabilities: Compliance report generation
 ```
 
-## 🧪 **Comprehensive Testing Suite**
+## 🧪 **Testing**
 
-### **Automated Testing**
+### **Running Tests**
 ```bash
-# Infrastructure Testing
-python3 tools/test-infrastructure.py    # Network bridge testing
-python3 tools/test-vm-deployment.py     # VM deployment validation
-python3 tools/test-container-isolation.py # Container security testing
-
-# Network Testing  
-python3 tools/test-connectivity.py      # Network connectivity validation
-python3 tools/test-performance.py       # Network performance benchmarks
-python3 tools/test-security.py          # Security configuration validation
-
-# Integration Testing
-python3 tools/test-web-interface.py     # Web dashboard functionality
-python3 tools/test-api-endpoints.py     # REST API validation
-python3 tools/test-vnc-access.py        # VNC console access testing
-
-# Load Testing
-python3 tools/test-concurrent-vms.py    # Concurrent VM capacity testing
-python3 tools/test-resource-limits.py   # Resource limit validation
-python3 tools/test-failure-recovery.py  # Failure recovery testing
+# Run the available test suite
+python3 tools/run-all-tests.py
 ```
 
-### **Test Coverage**
-```
-✅ Unit Tests: 95% code coverage
-✅ Integration Tests: Full stack testing  
-✅ Performance Tests: Benchmark validation
-✅ Security Tests: Vulnerability scanning
-✅ Load Tests: Scalability validation
-✅ Recovery Tests: Failure scenario testing
-```
+### **What Is Tested**
+- Topology YAML loading and validation
+- Deployment engine planning logic
+- Host resource scanning
+- Backend availability detection
 
-### **Continuous Validation**
-- **Pre-deployment testing**: Automatic topology validation
-- **Runtime monitoring**: Continuous health checks
-- **Performance monitoring**: Real-time performance metrics
-- **Security scanning**: Automated security validation
-- **Compliance checking**: Configuration compliance validation
+> ⚠️ **Note**: There is no CI configuration or code coverage reporting in the repository. Test tooling is present but coverage claims have not been independently verified.
 
 ## 🤝 **Contributing**
 
@@ -596,9 +495,8 @@ Special thanks to all contributors who have helped make NetLab V2 possible:
 ![GitHub Issues](https://img.shields.io/github/issues/sammtan/netlab-v2)
 
 ### **Development Statistics**
-- **Lines of Code**: 15,000+ (Python, Go, Rust, Shell)
-- **Test Coverage**: 95%+ code coverage
-- **Documentation**: 5 comprehensive guides
+- **Lines of Code**: 15,000+ (Python, Shell)
+- **Documentation**: 5 guides (see `docs/`)
 - **Topologies**: 5 specialized network scenarios
 - **Development**: Individual project by Samuel Tanaka Sibarani
 
@@ -606,24 +504,26 @@ Special thanks to all contributors who have helped make NetLab V2 possible:
 
 ## 🚀 **Get Started Today**
 
-Ready to build your enterprise cyber range? Deploy NetLab V2 in under 10 minutes:
+Ready to explore NetLab V2? Start with a host scan and a topology plan:
 
 ```bash
-# Quick deployment
+# Clone and set up
 git clone https://github.com/sammtan/netlab-v2.git
 cd netlab-v2
-python3 netlab-bridge.py setup
+pip install -r requirements-dev.txt
 
-# Deploy enterprise network
-python3 netlab-bridge.py dev
-netlab-deploy enterprise-network-lab.yaml
+# Check your host capabilities
+uvdnl scan
 
-# Access web dashboard
-open http://localhost:9000
+# Plan a topology deployment (checks feasibility without deploying)
+uvdnl plan topologies/basic-security.yaml
+
+# Deploy a topology (requires VirtualBox or Docker installed)
+uvdnl lab up topologies/basic-security.yaml
 ```
 
-**Experience the future of cybersecurity training and research with NetLab V2!**
+**NetLab V2 — a solid foundation for cyber range infrastructure, actively growing.** 🌐
 
 ---
 
-*NetLab V2 - Turning network simulation into network reality, one VM at a time.* 🌐
+*NetLab V2 - Building towards a complete cyber range platform, one feature at a time.* 🌐
